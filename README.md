@@ -4,12 +4,21 @@
 NOMBRE DE LOS INTEGRANTES:
 
         - Frias Lautaro
-        - Makoowiecki Geronimo
+        - Makowiecki Geronimo
         - Mariescurrena Katerina
         - Montanari Santiago
         - Santillan Bruno Alejo 
         - Zelayeta Iñaki Jose
-        
+
+LEVANTAR EL BACK:
+
+        - uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload       
+
+LEVANTAR EL FRONT:
+
+        -npm install
+        -npx expo start
+
 INFORMACION:
 
 2. Formato de escritura de los commits:
