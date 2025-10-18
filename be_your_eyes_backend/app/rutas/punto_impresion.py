@@ -6,9 +6,9 @@ from ..bd.sesion import get_db
 from ..esquemas.punto_impresion import (
     PuntoImpresionSchema,
     PuntoImpresionCreate,
-    PuntoImpresionUpdate
+    #PuntoImpresionUpdate
 )
-from ..crud import punto_impresion as crud  # 👈 Importar CRUD
+from ..crud import punto_impresion as crud 
 
 router = APIRouter(
     prefix="/puntos-impresion",
@@ -21,7 +21,7 @@ def obtener_puntos_impresion(
     nombre: Optional[str] = None,
     ubicacion: Optional[str] = None
 ):
-    return crud.listar_puntos_impresion(db, nombre, ubicacion)  # 👈 Una línea
+    return crud.listar_puntos_impresion(db, nombre, ubicacion) 
 
 @router.get("/{punto_id}", response_model=PuntoImpresionSchema)
 def obtener_punto_por_id(punto_id: int, db: Session = Depends(get_db)):
@@ -35,7 +35,7 @@ def obtener_punto_por_id(punto_id: int, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=PuntoImpresionSchema, status_code=status.HTTP_201_CREATED)
 def crear_punto_impresion(punto: PuntoImpresionCreate, db: Session = Depends(get_db)):
-    return crud.crear_punto_impresion(db, punto)  # 👈 Una línea
+    return crud.crear_punto_impresion(db, punto)  
 
 @router.put("/{punto_id}", response_model=PuntoImpresionSchema)
 def actualizar_punto_impresion(
