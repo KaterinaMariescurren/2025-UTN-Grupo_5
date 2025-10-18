@@ -5,3 +5,4 @@ from .menu import Menu
 from .categoria import Categoria
 from .menu_categoria import MenuCategoria
 from .plato import Plato
+from .punto_impresion import PuntoImpresion

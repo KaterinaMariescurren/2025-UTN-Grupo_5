@@ -139,6 +139,12 @@ export default function MenusScreen() {
       >
         <Text style={styles.buttontext}>Crear Menú</Text>
       </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => router.push(`/(local)/puntosImpresion`)}
+      >
+        <Text style={styles.buttontext}>Puntos de impresion</Text>
+      </TouchableOpacity>
     </View>
   );
 }
