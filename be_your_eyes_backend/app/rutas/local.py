@@ -39,3 +39,8 @@ def eliminar_local(local_id: int, db: Session = Depends(get_db)):
 @router.get("/buscar/", response_model=List[LocalRespuesta])
 def buscar_locales(nombre: str = None, tipo_local_id: int = None, direccion_id: int = None, db: Session = Depends(get_db)):
     return crud_local.buscar_locales(db, nombre, tipo_local_id, direccion_id)
+
+@router.get("/con_menus/", response_model=List[LocalRespuesta])
+def listar_locales_con_menus(db: Session = Depends(get_db)):
+    """Devuelve los locales que ofrecen al menos un menú."""
+    return crud_local.listar_locales_con_menus(db)
