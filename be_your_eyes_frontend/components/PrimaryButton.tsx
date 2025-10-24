@@ -6,13 +6,29 @@ interface ButtonProps {
     label: string;
     onPress: () => void;
     type?: "primary" | "secondary";
+    accessibilityHint?: string; // 👈 opcional, por si querés personalizarlo
 }
 
-export default function Button({ label, onPress, type = "primary" }: ButtonProps) {
+export default function Button({
+    label,
+    onPress,
+    type = "primary",
+    accessibilityHint,
+}: ButtonProps) {
     const backgroundColor = type === "primary" ? Colors.primary : Colors.secondary;
 
     return (
-        <TouchableOpacity style={[styles.button, { backgroundColor }]} onPress={onPress}>
+        <TouchableOpacity
+            style={[styles.button, { backgroundColor }]}
+            onPress={onPress}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={label}
+            accessibilityHint={
+                accessibilityHint ||
+                `Activa la acción "${label.toLowerCase()}".`
+            }
+        >
             <Text style={styles.text}>{label}</Text>
         </TouchableOpacity>
     );
@@ -24,7 +40,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         alignItems: "center",
         marginVertical: 8,
-        width:"100%"
+        width: "100%",
     },
     text: {
         color: Colors.text,
