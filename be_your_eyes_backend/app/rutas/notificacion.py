@@ -4,12 +4,28 @@ from typing import List
 from ..bd.sesion import get_db
 from ..crud import notificacion as crud_notificacion
 from ..esquemas.notificacion import NotificacionCrear, NotificacionRespuesta, NotificacionActualizar
+from ..modelos import Local
 
 router = APIRouter(prefix="/notificaciones", tags=["Notificaciones"])
 
 @router.post("/", response_model=NotificacionRespuesta)
 def crear_notificacion(notificacion: NotificacionCrear, db: Session = Depends(get_db)):
-    return crud_notificacion.crear_notificacion(db, notificacion)
+    nueva_notificacion = crud_notificacion.crear_notificacion(db, notificacion)
+    local = db.query(Local).filter(Local.id == notificacion.local_id).first()
+    if local:
+        # Si cumple, marcamos accesible. Si no cumple, marcamos false.
+        if notificacion.tiene_carta:
+            local.tiene_menu_accesible = True
+            local.tiene_qr = True
+        else:
+            local.tiene_menu_accesible = False
+            local.tiene_menu_accesible = True
+
+        db.commit()
+        db.refresh(local)
+
+    return nueva_notificacion
+
 
 @router.get("/", response_model=List[NotificacionRespuesta])
 def listar_notificaciones(db: Session = Depends(get_db)):
