@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from app.esquemas.direccion import DireccionCrear
 from app.esquemas.horario import HorarioCrear
+from app.esquemas.horario import HorarioRespuesta
 
 class LocalBase(BaseModel):
     nombre: str
@@ -30,6 +31,6 @@ class LocalActualizar(BaseModel):
 
 class LocalRespuesta(LocalBase):
     id: int
-
+    horarios: List[HorarioRespuesta] = []
     class Config:
         orm_mode = True

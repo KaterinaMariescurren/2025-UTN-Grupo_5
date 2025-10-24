@@ -2,130 +2,158 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, Alert, StyleSheet, ScrollView, Modal } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from '@expo/vector-icons'; 
+// import { useAuth } from '@/contexts/authContext'; 
+interface Horario {
+    dia: string;
+    horario_apertura: string;
+    horario_cierre: string;
+}
+
+interface Local {
+    id: number;
+    nombre: string;
+    horarios: Horario[]; 
+}
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export default function DetalleLocal() {
-  const { id } = useLocalSearchParams();
-  const [local, setLocal] = useState(null);
-  const [menus, setMenus] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const router = useRouter();
+    const { id } = useLocalSearchParams();
+    const [local, setLocal] = useState<Local | null>(null);
+    const [menus, setMenus] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const router = useRouter();
+    
+    // MOCK TEMPORAL: Reemplazar con const { user } = useAuth();
+    const user = { id: 123 }; 
 
-  useEffect(() => {
-    if (!id) return;
-    setLoading(true);
+    useEffect(() => {
+        if (!id) return;
+        setLoading(true);
 
-    fetch(`${BACKEND_URL}locales/${id}`)
-      .then(res => res.json())
-      .then(data => setLocal(data))
-      .catch(err => console.error(err));
+        fetch(`${BACKEND_URL}locales/${id}`)
+            .then(res => res.json())
+            .then(data => setLocal(data as Local))
+            .catch(err => console.error(err));
 
-    fetch(`${BACKEND_URL}menus/local/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        const menuData = Array.isArray(data) ? data : (Array.isArray(data.menus) ? data.menus : []);
-        setMenus(menuData);
-      })
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
-  }, [id]);
+        fetch(`${BACKEND_URL}menus/local/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                const menuData = Array.isArray(data) ? data : (Array.isArray(data.menus) ? data.menus : []);
+                setMenus(menuData);
+            })
+            .catch(err => console.error(err))
+            .finally(() => setLoading(false));
+    }, [id]);
 
-  const notificarCumplimiento = async (cumple: boolean) => {
-    setShowModal(false); 
-
-    try {
-      await fetch(`${BACKEND_URL}notificaciones/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          persona_id: user.id, 
-          local_id: parseInt(id as string),
-          tiene_carta: cumple,
-        }),
-      });
-      Alert.alert("Gracias", `Se notificó que el local ${cumple ? "CUMPLE" : "NO cumple"}.`);
-    } catch (error) {
-      Alert.alert("Error", "No se pudo enviar la notificación.");
-    }
-  };
-
-  if (loading || !local) return (
-    <View style={styles.loadingContainer}>
-      <Text style={styles.loadingText}>Cargando detalle del local...</Text>
-    </View>
-  );
-
-  return (
-    <View style={styles.fullContainer}>
-        <ScrollView contentContainerStyle={styles.contentContainer}>
-          
-            <Text style={styles.localNameTitle}>{local.nombre}</Text>
-
-            <Text style={styles.sectionTitle}>Horarios</Text>
-            <Text style={styles.horarioText}>Lunes: 08:30hs a 14:00hs</Text>
-            <Text style={styles.horarioText}>Martes: 08:30hs a 20:00hs</Text>
-            
-            <View style={styles.divider} />
-
-            <Text style={styles.sectionTitle}>Menús</Text>
-            <Text style={styles.menuSubtitle}>Haga clic para más información</Text>
-
-            {menus.length === 0 ? (
-                <Text style={styles.noMenus}>No hay menús disponibles</Text>
-            ) : (
-                menus.map(menu => (
-                    <TouchableOpacity
-                        key={menu.id}
-                        style={styles.menuCard}
-                        onPress={() => router.push(`/menu/${menu.id}`)}
-                    >
-                        <Text style={styles.menuName}>{menu.nombre}</Text> 
-                    </TouchableOpacity>
-                ))
-            )}
-            
-            <View style={{ height: 100 }} /> 
-
-        </ScrollView>
+    const notificarCumplimiento = async (cumple: boolean) => {
+        setShowModal(false); 
         
-        <TouchableOpacity
-            style={styles.notifyButtonFixed}
-            onPress={() => setShowModal(true)}
-        >
-            <Text style={styles.notifyTextFixed}>Notificar Cumplimiento</Text>
-        </TouchableOpacity>
+        if (!user?.id) { 
+             Alert.alert("Error", "Debes iniciar sesión para notificar el cumplimiento.");
+             return;
+        }
 
-        <Modal
-            animationType="fade"
-            transparent={true}
-            visible={showModal}
-            onRequestClose={() => setShowModal(false)}
-        >
-            <View style={styles.modalBackground}>
-                <View style={styles.modalContent}>
-                    <Text style={styles.modalTitle}>Notificar cumplimiento</Text>
-                    <Text style={styles.modalQuestion}>¿El local cumple con tener el menú en braille y/o el QR?</Text>
-                    
-                    <TouchableOpacity
-                        style={[styles.modalAction, styles.modalCumple]}
-                        onPress={() => notificarCumplimiento(true)}
-                    >
-                        <Text style={styles.modalActionText}>Cumple</Text>
-                    </TouchableOpacity>
+        try {
+            await fetch(`${BACKEND_URL}notificaciones/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    persona_id: user.id,
+                    local_id: parseInt(id as string),
+                    tiene_carta: cumple,
+                }),
+            });
+            Alert.alert("Gracias", `Se notificó que el local ${cumple ? "CUMPLE" : "NO cumple"}.`);
+        } catch (error) {
+            Alert.alert("Error", "No se pudo enviar la notificación.");
+        }
+    };
 
-                    <TouchableOpacity
-                        style={[styles.modalAction, styles.modalNoCumple]}
-                        onPress={() => notificarCumplimiento(false)}
-                    >
-                        <Text style={styles.modalActionText}>No Cumple</Text>
-                    </TouchableOpacity>
+    if (loading || !local) return (
+        <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Cargando detalle del local...</Text>
+        </View>
+    );
+
+    return (
+        <View style={styles.fullContainer}>
+            <ScrollView contentContainerStyle={styles.contentContainer}>
+            
+                <Text style={styles.localNameTitle}>{local.nombre}</Text>
+
+                <Text style={styles.sectionTitle}>Horarios</Text>
+                
+                {local.horarios && local.horarios.length > 0 ? (
+                    local.horarios.map((h, index) => (
+                                <Text key={index} style={styles.horarioText}>
+                                    {h.dia}: {h.horario_apertura.substring(0, 5)}hs a {h.horario_cierre.substring(0, 5)}hs
+                                </Text>
+                    ))
+                ) : (
+                    <Text style={styles.horarioText}>Horarios no disponibles</Text>
+                )}
+
+                <View style={styles.divider} />
+
+                <Text style={styles.sectionTitle}>Menús</Text>
+                <Text style={styles.menuSubtitle}>Haga clic para más información</Text>
+
+                {menus.length === 0 ? (
+                    <Text style={styles.noMenus}>No hay menús disponibles</Text>
+                ) : (
+                    menus.map((menu: any) => (
+                        <TouchableOpacity
+                            key={menu.id}
+                            style={styles.menuCard}
+                            onPress={() => router.push(`/menu/${menu.id}`)}
+                        >
+                            <Text style={styles.menuName}>{menu.nombre}</Text> 
+                        </TouchableOpacity>
+                    ))
+                )}
+                
+                <View style={{ height: 100 }} /> 
+
+            </ScrollView>
+            
+            <TouchableOpacity
+                style={styles.notifyButtonFixed}
+                onPress={() => setShowModal(true)}
+            >
+                <Text style={styles.notifyTextFixed}>Notificar Cumplimiento</Text>
+            </TouchableOpacity>
+
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={showModal}
+                onRequestClose={() => setShowModal(false)}
+            >
+                <View style={styles.modalBackground}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Notificar cumplimiento</Text>
+                        <Text style={styles.modalQuestion}>¿El local cumple con tener el menú en braille y/o el QR?</Text>
+                        
+                        <TouchableOpacity
+                            style={[styles.modalAction, styles.modalCumple]}
+                            onPress={() => notificarCumplimiento(true)}
+                        >
+                            <Text style={[styles.modalActionText, { color: 'white' }]}>Cumple</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.modalAction, styles.modalNoCumple]}
+                            onPress={() => notificarCumplimiento(false)}
+                        >
+                            <Text style={[styles.modalActionText, { color: '#333' }]}>No Cumple</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
-        </Modal>
-    </View>
-  );
+            </Modal>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -269,9 +297,6 @@ const styles = StyleSheet.create({
     modalActionText: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: 'white',
-        ...({ 
-            color: '#333'
-        }),
+        color: 'white', 
     },
 });

@@ -43,7 +43,7 @@ export default function RootLayout() {
         options={commonOptions} 
       />
       <Stack.Screen 
-        name="restaurante/all" 
+        name="restaurantes/all" 
         options={commonOptions} 
       />
     </Stack>
