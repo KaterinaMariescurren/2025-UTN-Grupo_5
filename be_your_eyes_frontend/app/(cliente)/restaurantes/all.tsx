@@ -26,10 +26,13 @@ export default function TodosLosRestaurantes() {
       });
   }, []);
 
-  const filteredLocales = locales.filter(item =>
-    item.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (item.direccion && item.direccion.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+ const filteredLocales = locales.filter(item =>
+    item.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (
+      item.direccion && 
+      `${item.direccion.calle} ${item.direccion.altura}`.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
 
   const renderContent = () => {
     if (loading) {
@@ -55,8 +58,8 @@ export default function TodosLosRestaurantes() {
           >
             <Text style={styles.name}>{item.nombre}</Text>
             <Text style={styles.address}>
-              {item.direccion ? item.direccion : 'Dirección no disponible'}
-            </Text>
+              {item.direccion ? `${item.direccion.calle} ${item.direccion.altura}` : 'Dirección no disponible'}
+            </Text>
             {item.tiene_menu_accesible && (
               <Text style={styles.accesible}>✅ Carta accesible</Text>
             )}

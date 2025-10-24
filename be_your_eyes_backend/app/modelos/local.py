@@ -18,3 +18,4 @@ class Local(Base):
     menus = relationship("Menu", back_populates="local", cascade="all, delete-orphan")
     horarios = relationship("Horario", back_populates="local", cascade="all, delete")
     notificaciones = relationship("Notificacion", back_populates="local")
+    direccion = relationship("Direccion", back_populates="local", uselist=False)
