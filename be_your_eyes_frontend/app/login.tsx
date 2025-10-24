@@ -1,12 +1,13 @@
+import CustomButton from "@/components/CustomButton";
+import CustomInput from "@/components/CustomInput";
+import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/contexts/authContext";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -16,11 +17,12 @@ export default function LoginScreen() {
   const { login } = useAuth();
 
   const [email, setEmail] = useState("");
-  const [contrasenia, setContrasenia] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !contrasenia) {
+    if (!email || !password) {
       Alert.alert("Error", "Completa todos los campos");
       return;
     }
@@ -28,23 +30,18 @@ export default function LoginScreen() {
     try {
       setLoading(true);
 
-      // 🚀 Cambia esta URL por la de tu backend
       const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, contrasenia }),
+        body: JSON.stringify({ email, password }),
       });
 
-      if (!response.ok) {
-        throw new Error("Credenciales inválidas");
-      }
+      if (!response.ok) throw new Error("Credenciales inválidas");
 
       const data = await response.json();
-
-      // Suponiendo que tu backend devuelve { token: "...", user: {...} }
       await login(data.access_token);
 
-      router.replace("/(local)"); // navega a home o la pantalla principal
+      router.replace("/(local)");
     } catch (error: any) {
       Alert.alert("Error", error.message || "Error al iniciar sesión");
     } finally {
@@ -53,53 +50,60 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Hola,{"\n"}Vamos a Iniciar Sesión</Text>
+    <View style={styles.container} accessible accessibilityLabel="Pantalla de Iniciar sesión">
 
-      <View style={styles.inputContainer}>
-        <MaterialIcons
-          name="email"
-          size={24}
-          color="#273431"
-          style={styles.icon}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Correo"
-          placeholderTextColor="#273431" // Color del placeholder
+      {/* Títulos */}
+      <View style={styles.titleContainer} accessible accessibilityRole="header">
+        <Text style={styles.titleBig}>Hola,</Text>
+        <Text style={styles.titleSmall}>Vamos a iniciar sesión</Text>
+      </View>
+
+      {/* Inputs */}
+      <View style={styles.inputsContainer}>
+        <CustomInput
+          label="Email"
           value={email}
           onChangeText={setEmail}
-          autoCapitalize="none"
+          placeholder="Email"
           keyboardType="email-address"
+          accessibilityHint="Ingresa tu correo electrónico"
+        />
+        <CustomInput
+          label="Contraseña"
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Contraseña"
+          keyboardType="default"
+          secureTextEntry={!showPassword}
+          rightIconName={showPassword ? "visibility" : "visibility-off"}
+          rightIconAccessibilityLabel={
+            showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+          }
+          rightIconAccessibilityHint="Toca para alternar la visibilidad de la contraseña"
+          onRightIconPress={() => setShowPassword(!showPassword)}
         />
       </View>
 
-      {/* Contraseña input con icono */}
-      <View style={styles.inputContainer}>
-        <MaterialIcons
-          name="lock"
-          size={24}
-          color="#273431"
-          style={styles.icon}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Contraseña"
-          placeholderTextColor="#273431"
-          secureTextEntry
-          value={contrasenia}
-          onChangeText={setContrasenia}
-        />
-      </View>
-      <TouchableOpacity
-        style={styles.button}
+      {/* Botón */}
+      <CustomButton
+        label={loading ? "Ingresando..." : "Iniciar Sesión"}
+        type="primary"
         onPress={handleLogin}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? "Ingresando..." : "Iniciar Sesión"}
-        </Text>
-      </TouchableOpacity>
+        accessibilityHint="Abre la pantalla de inicio de sesión"
+      />
+
+      {/* Registro */}
+      <View style={styles.registerContainer}>
+        <Text style={styles.registerText}>¿No tenés cuenta? </Text>
+        <TouchableOpacity
+          onPress={() => router.push("/register")}
+          accessibilityRole="link"
+          accessibilityLabel="Registrate"
+          accessibilityHint="Toca para ir a la pantalla de registro"
+        >
+          <Text style={styles.registerLink}>Registrate</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -107,48 +111,45 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     padding: 20,
     backgroundColor: "#FFFFFF",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    marginTop: 50,
   },
-  title: {
+  titleContainer: {
+    alignItems: "center",
+    marginBottom: 40,
+  },
+  titleBig: {
+    fontSize: 40,
+    fontWeight: "700",
+    color: "#273431",
+    textAlign: "center",
+  },
+  titleSmall: {
     fontSize: 32,
-    fontWeight: 700,
-    marginBottom: 49,
-    color: "#273431",
+    fontWeight: "400",
+    color: Colors.primary,
+    textAlign: "center",
+    marginTop: 4,
   },
-  inputContainer: {
+  inputsContainer: {
+    width: "100%",
+    marginTop: 45,
+    marginBottom: 45,
+  },
+  registerContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#BFEAE4",
-    borderWidth: 1,
-    borderColor: "#BDC3C7",
-    borderRadius: 8,
-    marginBottom: 34,
-    height: 60,
+    marginTop: 20,
   },
-  icon: {
-    padding: 10,
-  },
-
-  input: {
-    flex: 1,
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    color: "#273431",
+  registerText: {
     fontSize: 16,
+    color: Colors.text,
   },
-  button: {
-    backgroundColor: "#BFEAE4",
-    padding: 15,
-    borderRadius: 8,
-    height: 60,
-    alignItems: "center",
-    marginTop: 60,
-  },
-  buttonText: {
-    color: "#230808",
-    fontWeight: 600,
-    fontSize: 23,
+  registerLink: {
+    fontSize: 16,
+    color: Colors.cta,
+    textDecorationLine: "underline",
   },
 });
