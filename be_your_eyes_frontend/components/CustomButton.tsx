@@ -9,7 +9,7 @@ interface ButtonProps {
     accessibilityHint?: string; // 👈 opcional, por si querés personalizarlo
 }
 
-export default function PrButton({
+export default function CustomButton({
     label,
     onPress,
     type = "primary",
