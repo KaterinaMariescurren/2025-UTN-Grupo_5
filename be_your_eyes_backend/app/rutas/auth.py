@@ -32,7 +32,7 @@ def login(payload: UsuarioLogin, db: Session = Depends(get_db)):
     if not usuario:
         raise HTTPException(status_code=401, detail="Email o contraseña incorrectos")
     token = crear_token({"sub": usuario.email, "tipo": usuario.tipo})
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "tipo": usuario.tipo, "token_type": "bearer"}
 
 @router.get("/me/local_id")
 def obtener_local_id(
