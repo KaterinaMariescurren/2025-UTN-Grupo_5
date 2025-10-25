@@ -146,7 +146,7 @@ export default function RegisterLocalScreen() {
 
       const body = {
         email,
-        password,
+        contrasenia: password,
         tipo: "local",
         local: {
           nombre: nombreLocal,

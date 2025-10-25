@@ -33,17 +33,17 @@ export default function LoginScreen() {
       const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, contrasenia: password }),
       });
 
       if (!response.ok) throw new Error("Credenciales inválidas");
 
       const data = await response.json();
       if (data.tipo === "persona") {
+        await login(data.access_token);
         router.replace("/(cliente)/tiporestaurante");
         return;
       }
-
       await login(data.access_token);
 
       router.replace("/(local)");
