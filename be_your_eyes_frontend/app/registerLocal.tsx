@@ -1,3 +1,9 @@
+import CustomApertura from "@/components/CustomApertura";
+import CustomButton from "@/components/CustomButton";
+import CustomDropdown from "@/components/CustomDropdown";
+import CustomInput from "@/components/CustomInput";
+import CustomTimePicker from "@/components/CustomTimePicker";
+import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/contexts/authContext";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
@@ -8,46 +14,56 @@ import {
   Modal,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 
 export default function RegisterLocalScreen() {
+  /** ------------------ ESTADOS ------------------ **/
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  // Información local
   const [nombreLocal, setNombreLocal] = useState("");
   const [email, setEmail] = useState("");
-  const [contrasenia, setContrasenia] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [password2, setPassword2] = useState("");
+  const [showPassword2, setShowPassword2] = useState(false);
+  const [telefono, setTelefono] = useState("");
+
+  // Dirección
   const [calle, setCalle] = useState("");
   const [numero, setNumero] = useState("");
   const [codigoPostal, setCodigoPostal] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  // Horarios y tipos de local
   const [horarios, setHorarios] = useState<
     { dia: string; apertura: string; cierre: string }[]
   >([]);
+  const [tiposLocales, setTiposLocales] = useState<{ id: number; nombre: string }[]>([]);
+  const [tipoLocalSeleccionado, setTipoLocalSeleccionado] = useState<number | null>(null);
 
+  // Modal horarios
   const [modalVisible, setModalVisible] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [diaTemp, setDiaTemp] = useState("Lunes");
+  const [diaTemp, setDiaTemp] = useState("");
   const [aperturaTemp, setAperturaTemp] = useState(new Date());
   const [cierreTemp, setCierreTemp] = useState(new Date());
   const [showApertura, setShowApertura] = useState(false);
   const [showCierre, setShowCierre] = useState(false);
-  const [tiposLocales, setTiposLocales] = useState<
-    { id: number; nombre: string }[]
-  >([]);
-  const [tipoLocalSeleccionado, setTipoLocalSeleccionado] = useState<
-    number | null
-  >(null);
 
+  const { login } = useAuth();
+
+  /** ------------------ HOOKS ------------------ **/
   useEffect(() => {
-    // Traer tipos de local desde backend
     fetch(`${process.env.EXPO_PUBLIC_API_URL}tipos_local`)
       .then((res) => res.json())
       .then((data) => setTiposLocales(data))
       .catch((err) => console.log("Error cargando tipos de local:", err));
   }, []);
 
+  /** ------------------ FUNCIONES MODAL ------------------ **/
   const openModalForNew = () => {
     setEditingIndex(null);
     setDiaTemp("Lunes");
@@ -77,9 +93,8 @@ export default function RegisterLocalScreen() {
         const copy = [...prev];
         copy[editingIndex] = newHorario;
         return copy;
-      } else {
-        return [...prev, newHorario];
       }
+      return [...prev, newHorario];
     });
 
     setModalVisible(false);
@@ -89,57 +104,32 @@ export default function RegisterLocalScreen() {
     setHorarios((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const { login } = useAuth();
+  /** ------------------ FUNCIONES DE NAVEGACIÓN ------------------ **/
+  const handleNext = () => setStep((prev) => prev + 1);
+  const handleBack = () => setStep((prev) => prev - 1);
+
+  /** ------------------ FUNCION PRINCIPAL: REGISTER ------------------ **/
   const handleRegister = async () => {
-    // Validación básica de campos obligatorios
-    if (!nombreLocal.trim()) {
-      Alert.alert("Error", "Ingresa el nombre del local");
-      return;
-    }
-    if (!email.trim()) {
-      Alert.alert("Error", "Ingresa un correo electrónico");
-      return;
-    }
-    if (!contrasenia.trim()) {
-      Alert.alert("Error", "Ingresa una contraseña");
-      return;
-    }
-    if (!calle.trim()) {
-      Alert.alert("Error", "Ingresa la calle del local");
-      return;
-    }
-    if (!numero.trim()) {
-      Alert.alert("Error", "Ingresa la altura del local");
-      return;
-    }
-    if (!codigoPostal.trim()) {
-      Alert.alert("Error", "Ingresa el código postal");
-      return;
-    }
-    if (!telefono.trim()) {
-      Alert.alert("Error", "Ingresa el teléfono");
-      return;
-    }
-    if (tipoLocalSeleccionado === null) {
-      Alert.alert("Error", "Selecciona un tipo de local");
-      return;
-    }
-    if (horarios.length === 0) {
-      Alert.alert("Error", "Agrega al menos un horario");
-      return;
-    }
-    // Validar que cada horario tenga apertura y cierre
+    // Validaciones básicas
+    if (!nombreLocal.trim()) return Alert.alert("Error", "Ingresa el nombre del local");
+    if (!email.trim()) return Alert.alert("Error", "Ingresa un correo electrónico");
+    if (!password.trim()) return Alert.alert("Error", "Ingresa una contraseña");
+    if (!calle.trim()) return Alert.alert("Error", "Ingresa la calle del local");
+    if (!numero.trim()) return Alert.alert("Error", "Ingresa la altura del local");
+    if (!codigoPostal.trim()) return Alert.alert("Error", "Ingresa el código postal");
+    if (!telefono.trim()) return Alert.alert("Error", "Ingresa el teléfono");
+    if (tipoLocalSeleccionado === null) return Alert.alert("Error", "Selecciona un tipo de local");
+    if (horarios.length === 0) return Alert.alert("Error", "Agrega al menos un horario");
+
     for (let h of horarios) {
       if (!h.apertura || !h.cierre) {
-        Alert.alert("Error", `El horario del día ${h.dia} está incompleto`);
-        return;
+        return Alert.alert("Error", `El horario del día ${h.dia} está incompleto`);
       }
     }
 
     try {
       setLoading(true);
 
-      // Ajustar horarios para el backend
       const horariosBackend = horarios.map((h) => ({
         dia: h.dia,
         horario_apertura: new Date(h.apertura).toLocaleTimeString("es-AR", {
@@ -156,7 +146,7 @@ export default function RegisterLocalScreen() {
 
       const body = {
         email,
-        contrasenia,
+        password,
         tipo: "local",
         local: {
           nombre: nombreLocal,
@@ -191,220 +181,351 @@ export default function RegisterLocalScreen() {
       setLoading(false);
     }
   };
-
-  const [step, setStep] = useState(1);
-
-  const handleNext = () => setStep((prev) => prev + 1);
-  const handleBack = () => setStep((prev) => prev - 1);
+  
   return (
     <View style={styles.container}>
       {step === 1 && (
         <View>
-          <Text style={styles.title}>
-            El proceso de registro es rápido y sencillo.{" "}
-          </Text>
-          <Text style={styles.subtitle}>
-            {" "}
-            Solo necesitarás completar 3 pasos.
-          </Text>
+          {/* Título principal */}
+          <View
+            style={styles.titleContainer}
+            accessible
+            accessibilityRole="header"
+            accessibilityLabel="El proceso de registro es rápido y sencillo. Solo necesitarás completar 3 pasos."
+          >
+            <Text style={styles.title}>
+              El proceso de registro es rápido y sencillo,
+            </Text>
+            <Text style={styles.titleRed}>
+              Solo necesitarás{"\n"} completar 3 pasos
+            </Text>
+          </View>
+
+          {/* Pasos */}
           <View style={styles.pasosContainer}>
-            <Text style={styles.pasos}>1: Información básica del local</Text>
-            <Text style={styles.pasos}>2: Tipo de local y horarios</Text>
-            <Text style={styles.pasos}>3: Direccion</Text>
+            {[
+              "Información básica",
+              "Tipo de local y horarios",
+              "Dirección",
+            ].map((texto, index) => (
+              <View
+                key={index}
+                style={styles.pasoItem}
+                accessible
+                accessibilityRole="text"
+                accessibilityLabel={`Paso ${index + 1}: ${texto}`}
+              >
+                <View style={styles.pasoNumeroContainer}>
+                  <Text style={styles.pasoNumero}>{index + 1}</Text>
+                </View>
+                <Text style={styles.pasoTexto}>{texto}</Text>
+              </View>
+            ))}
           </View>
         </View>
       )}
-
       {step === 2 && (
-        <View style={{ marginBottom: 50 }}>
-          <Text style={styles.pasoText}>
-            Paso 1: Información básica del local
-          </Text>
-          <TextInput
-            style={styles.input}
-            value={nombreLocal}
-            onChangeText={(text) => setNombreLocal(text)}
-            placeholder="Nombre del local"
-            placeholderTextColor={"#273431"}
-          />
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={(text) => setEmail(text)}
-            placeholder="Correo electronico"
-            placeholderTextColor={"#273431"}
-          />
-          <TextInput
-            style={styles.input}
-            value={contrasenia}
-            onChangeText={(text) => setContrasenia(text)}
-            placeholder="Contraseña"
-            secureTextEntry
-            placeholderTextColor={"#273431"}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Teléfono"
-            value={telefono}
-            onChangeText={(text) => setTelefono(text)}
-            keyboardType="phone-pad"
-            placeholderTextColor={"#273431"}
-          />
+        <View>
+          <View style={styles.tituloStep}>
+            <View
+              style={styles.pasoItem}
+              accessible
+              accessibilityRole="text"
+              accessibilityLabel={`Paso 1 Información básica`}
+            >
+              <View style={styles.pasoNumeroContainer}>
+                <Text style={styles.pasoNumero}>1</Text>
+              </View>
+              <Text style={styles.pasoTexto}>Información básica</Text>
+            </View>
+          </View>
+          <View style={styles.inputsContainer}>
+            <CustomInput
+              label="Nombre del local"
+              value={nombreLocal}
+              onChangeText={(text) => setNombreLocal(text)}
+              placeholder="Nombre del local"
+              keyboardType="default"
+              accessibilityHint="Ingresa el nombre del local"
+            />
+            <CustomInput
+              label="Contraseña"
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Contraseña"
+              keyboardType="default"
+              secureTextEntry={!showPassword}
+              accessibilityHint="Ingresa la contraseña"
+              rightIconName={showPassword ? "visibility" : "visibility-off"}
+              rightIconAccessibilityLabel={
+                showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+              }
+              rightIconAccessibilityHint="Toca para alternar la visibilidad de la contraseña"
+              onRightIconPress={() => setShowPassword(!showPassword)}
+            />
+            <CustomInput
+              label="Contraseña"
+              value={password2}
+              onChangeText={setPassword2}
+              placeholder="Contraseña"
+              keyboardType="default"
+              secureTextEntry={!showPassword2}
+              accessibilityHint="Ingresa la contraseña"
+              rightIconName={showPassword2 ? "visibility" : "visibility-off"}
+              rightIconAccessibilityLabel={
+                showPassword2 ? "Ocultar contraseña" : "Mostrar contraseña"
+              }
+              rightIconAccessibilityHint="Toca para alternar la visibilidad de la contraseña"
+              onRightIconPress={() => setShowPassword2(!showPassword2)}
+            />
+            <CustomInput
+              label="Email"
+              value={email}
+              onChangeText={(email) => setEmail(email)}
+              placeholder="Email"
+              keyboardType="email-address"
+              accessibilityHint="Ingresa el email del local"
+            />
+            <CustomInput
+              label="Telefono"
+              value={telefono}
+              onChangeText={(telefono) => setTelefono(telefono)}
+              placeholder="Telefono"
+              keyboardType="phone-pad"
+              accessibilityHint="Ingresa el telefono del local"
+            />
+          </View>
         </View>
       )}
-
       {step === 3 && (
-        <View style={{ marginBottom: 50 }}>
-          <Text style={styles.pasoText}>Paso 2: Dirección</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Calle"
-            value={calle}
-            onChangeText={(text) => setCalle(text)}
-            placeholderTextColor={"#273431"}
+        <View>
+          <View style={styles.tituloStep}>
+            <View
+              style={styles.pasoItem}
+              accessible
+              accessibilityRole="text"
+              accessibilityLabel={`Paso 2 Tipo de local y horarios`}
+            >
+              <View style={styles.pasoNumeroContainer}>
+                <Text style={styles.pasoNumero}>2</Text>
+              </View>
+              <Text style={styles.pasoTexto}>Tipo de local y horarios</Text>
+            </View>
+          </View>
+          <View style={styles.inputsContainer}>
+            <CustomDropdown
+              label="Tipo de local"
+              value={
+                tipoLocalSeleccionado
+                  ? tiposLocales.find((t) => t.id === tipoLocalSeleccionado)?.nombre || ""
+                  : ""
+              }
+              placeholder="Selecciona tipo de local"
+              options={tiposLocales.map((t) => t.nombre)}
+              onSelect={(nombre) => {
+                const seleccionado = tiposLocales.find((t) => t.nombre === nombre);
+                if (seleccionado) setTipoLocalSeleccionado(seleccionado.id);
+              }}
+              accessibilityHint="Selecciona el tipo de local"
+            />
+          </View>
+          <View style={styles.aperturaContainer}>
+            <Text style={styles.pasoTexto}>Días y horarios</Text>
+
+            {horarios.length === 0 ? (
+              <Text></Text>
+            ) : (
+              horarios.map((h, index) => (
+                <View
+                  key={index}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    marginTop: 8,
+                  }}
+                >
+                  {/* Izquierda: Día y horario */}
+                  <View style={{ flex: 1 }}>
+                    <CustomApertura
+                      fecha={h.dia}
+                      horario_inicio={new Date(h.apertura).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })}
+                      horario_fin={new Date(h.cierre).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })}
+                    />
+                  </View>
+
+                  {/* Derecha: Botones */}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      flex: 1,
+                      gap: 8,
+                    }}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <CustomButton
+                        label="Editar"
+                        type="primary"
+                        onPress={() => openModalForEdit(index)}
+                        accessibilityHint="Abre el modal para editar este horario"
+                      />
+                    </View>
+
+                    <View style={{ flex: 1 }}>
+                      <CustomButton
+                        label="Borrar"
+                        type="delete"
+                        onPress={() => deleteHorario(index)}
+                        accessibilityHint="Elimina este horario"
+                      />
+                    </View>
+                  </View>
+                </View>
+              ))
+            )}
+          </View>
+
+          <CustomButton
+            label="Agregar dia y horario"
+            type="secondary"
+            onPress={openModalForNew}
+            accessibilityHint="Ingresa un dia y horario de apertura"
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Altura"
-            value={numero}
-            onChangeText={(text) => setNumero(text)}
-            keyboardType="numeric"
-            placeholderTextColor={"#273431"}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Código postal"
-            value={codigoPostal}
-            onChangeText={(text) => setCodigoPostal(text)}
-            keyboardType="numeric"
-            placeholderTextColor={"#273431"}
-          />
+
+          {/* Modal */}
+          <Modal visible={modalVisible} animationType="slide" transparent>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "#000000aa",
+              }}
+            >
+              <View
+                style={{
+                  width: "80%",
+                  backgroundColor: "white",
+                  paddingVertical: 40,
+                  paddingHorizontal: 20,
+                  borderRadius: 24,
+                }}
+              >
+                <Text
+                  style={styles.pasoTexto}
+                >
+                  {editingIndex !== null ? "Editar dia y horario" : "Agregar dia y horario"}
+                </Text>
+
+                {/* Picker de días */}
+                <CustomDropdown
+                  label="Dias de apertura"
+                  value={diaTemp}
+                  placeholder="Dia"
+                  options={[
+                    "Lunes",
+                    "Martes",
+                    "Miércoles",
+                    "Jueves",
+                    "Viernes",
+                    "Sábado",
+                    "Domingo",
+                  ]}
+                  onSelect={setDiaTemp}
+                  accessibilityHint="Selecciona un dia de apertura"
+                />
+                <CustomTimePicker
+                  label="Hora de apertura"
+                  value={aperturaTemp}
+                  onChange={setAperturaTemp}
+                />
+                <CustomTimePicker
+                  label="Hora de cierre"
+                  value={cierreTemp}
+                  onChange={setCierreTemp}
+                />
+
+                {/* Botones modal */}
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    gap: 8,
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <CustomButton
+                      label="Cancelar"
+                      type="delete"
+                      onPress={() => setModalVisible(false)} // <-- define esta función
+                      accessibilityHint="Cancelar el dia y horario de apertura"
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <CustomButton
+                      label="Guardar"
+                      type="primary"
+                      onPress={saveHorario}
+                      accessibilityHint="Guardar el dia y horario de apertura"
+                    />
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Modal>
         </View>
       )}
 
       {step === 4 && (
-        <View style={{ marginBottom: 0 }}>
-          <Text style={styles.pasoText}>Paso 3: Tipo de local y horarios</Text>
-          <View
-            style={[
-              styles.input,
-              { justifyContent: "center", paddingHorizontal: 15 },
-            ]}
-          >
-            <Picker
-              selectedValue={tipoLocalSeleccionado}
-              onValueChange={(val) => setTipoLocalSeleccionado(val)}
-              style={{ color: "#273431" }} // opcional, para el color del texto
-              dropdownIconColor="#273431" // en Android
-            >
-              <Picker.Item label="Tipo de local" value={null} />
-              {tiposLocales.map((t) => (
-                <Picker.Item key={t.id} label={t.nombre} value={t.id} />
-              ))}
-            </Picker>
-          </View>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: 600,
-              color: "#273431",
-              marginBottom: 10,
-              marginTop: 20,
-            }}
-          >
-            Horarios:
-          </Text>
-
-          {horarios.length === 0 && (
-            <Text
-              style={{
-                textAlign: "center",
-                marginBottom: 15,
-                fontSize: 16,
-                fontWeight: 500,
-              }}
-            >
-              No hay horarios agregados.
-            </Text>
-          )}
-
-          {horarios.map((h, i) => (
+        <View>
+          <View style={styles.tituloStep}>
             <View
-              key={i}
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginVertical: 5,
-              }}
+              style={styles.pasoItem}
+              accessible
+              accessibilityRole="text"
+              accessibilityLabel={`Paso 3 Direccion`}
             >
-              {/* Texto del horario a la izquierda */}
-              <Text
-                style={{
-                  flex: 1,
-                  fontSize: 16,
-                  fontWeight: "500",
-                  color: "#273431",
-                }}
-              >
-                {h.dia}: {new Date(h.apertura).toLocaleTimeString()} -{" "}
-                {new Date(h.cierre).toLocaleTimeString()}
-              </Text>
-
-              {/* Contenedor de botones a la derecha */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  marginLeft: 10,
-                  alignItems: "center",
-                }}
-              >
-                <TouchableOpacity
-                  onPress={() => openModalForEdit(i)}
-                  style={[
-                    styles.smallButton,
-                    {
-                      backgroundColor: "#BFEAE4",
-                      paddingVertical: 10,
-                      paddingHorizontal: 16,
-                      minHeight: 40, // misma altura para todos
-                      justifyContent: "center",
-                    },
-                  ]}
-                >
-                  <Text style={[styles.smallButtonText, { fontSize: 16 }]}>
-                    Editar
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => deleteHorario(i)}
-                  style={[
-                    styles.smallButton,
-                    {
-                      backgroundColor: "#F28B82",
-                      paddingVertical: 10,
-                      paddingHorizontal: 16,
-                      minHeight: 40,
-                      justifyContent: "center",
-                      marginLeft: 8, // espacio entre botones
-                    },
-                  ]}
-                >
-                  <Text style={[styles.smallButtonText, { fontSize: 16 }]}>
-                    Borrar
-                  </Text>
-                </TouchableOpacity>
+              <View style={styles.pasoNumeroContainer}>
+                <Text style={styles.pasoNumero}>3</Text>
               </View>
+              <Text style={styles.pasoTexto}>Direccion</Text>
             </View>
-          ))}
-
-          <TouchableOpacity
-            onPress={openModalForNew}
-            style={{ ...styles.button, flex: undefined, width: "100%", marginTop: 20, height: 55, marginBottom: 40 }}
-          >
-            <Text style={{ ...styles.buttonText, fontSize: 18}}>Agregar horario</Text>
-          </TouchableOpacity>
+          </View>
+          <View style={styles.inputsContainer}>
+            <CustomInput
+              label="Calle"
+              value={calle}
+              onChangeText={(text) => setCalle(text)}
+              placeholder="Calle del local"
+              keyboardType="default"
+              accessibilityHint="Ingresa la calle del local"
+            />
+            <CustomInput
+              label="Altura "
+              value={numero}
+              onChangeText={(text) => setNumero(text)}
+              placeholder="Altura del local"
+              keyboardType="default"
+              accessibilityHint="Ingresa la altura del local"
+            />
+            <CustomInput
+              label="Codigo Postal"
+              value={codigoPostal}
+              onChangeText={(text) => setCodigoPostal(text)}
+              placeholder="Codigo postal"
+              keyboardType="default"
+              accessibilityHint="Ingresa tu codigo postal"
+            />
+          </View>
 
           {/* Modal */}
           <Modal visible={modalVisible} animationType="slide" transparent>
@@ -543,39 +664,78 @@ export default function RegisterLocalScreen() {
       )}
 
       <View style={{ flexDirection: "row", marginTop: 20, gap: 10 }}>
-        {step > 1 && (
-          <TouchableOpacity
-            style={{ ...styles.button, flex: 1 }}
-            onPress={handleBack}
-          >
-            <Text style={styles.buttonText}>Atrás</Text>
-          </TouchableOpacity>
-        )}
-
-        <TouchableOpacity
-          style={{ ...styles.button, flex: 1 }}
+        <CustomButton
+          label={step < 4 ? "Siguiente" : "Registrar"}
+          type="primary"
           onPress={step < 4 ? handleNext : handleRegister}
-        >
-          <Text style={styles.buttonText}>
-            {step < 4 ? "Siguiente" : "Registrar"}
-          </Text>
-        </TouchableOpacity>
+          accessibilityHint="Siguiente"
+        />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "flex-start",
+    marginTop: 50,
+  },
+  titleContainer: {
+    alignItems: "center",
+    marginBottom: 72,
+  },
   title: {
     fontSize: 27,
-    marginBottom: 26,
-    marginHorizontal: 72,
-    color: "#273431",
-    fontWeight: 700,
-    marginTop: 150,
+    fontWeight: "600",
+    color: Colors.text,
     textAlign: "center",
+    marginTop: 4,
   },
+  titleRed: {
+    fontSize: 27,
+    fontWeight: "600",
+    color: Colors.cta,
+    textAlign: "center",
+    marginTop: 4,
+  },
+  pasosContainer: {
+    marginHorizontal: 20,
+    gap: 30,
+    marginBottom: 72,
+  },
+  pasoItem: { flexDirection: "row", alignItems: "center", gap: 8 },
+  pasoNumeroContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.secondary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  pasoNumero: { color: Colors.text, fontWeight: "700", fontSize: 20 },
+  pasoTexto: { fontSize: 20, fontWeight: "700", color: Colors.text, flexShrink: 1 },
+  tituloStep: {
+    flex: 1,
+    alignItems: "center",
+    marginBottom: 45
+  },
+  inputsContainer: {
+    width: "100%",
+    marginTop: 45,
+    marginBottom: 45,
+  },
+  aperturaContainer: {
+    borderTopWidth: 1,
+    borderTopColor: "#000",
+    borderBottomWidth: 1,
+    borderBottomColor: "#000",
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+
   subtitle: {
     fontSize: 27,
     fontWeight: 600,
@@ -594,7 +754,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   buttonText: { color: "#0E0202", fontWeight: 600, fontSize: 25 },
-  pasosContainer: { marginHorizontal: 45, gap: 8, marginBottom: 129 },
   pasos: { fontSize: 24, fontWeight: 600, color: "#273431", marginBottom: 19 },
   pasoText: {
     marginTop: 150,

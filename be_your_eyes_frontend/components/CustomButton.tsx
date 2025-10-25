@@ -5,7 +5,7 @@ import { StyleSheet, Text, TouchableOpacity } from "react-native";
 interface ButtonProps {
     label: string;
     onPress: () => void;
-    type?: "primary" | "secondary";
+    type?: "primary" | "secondary" | "delete";
     accessibilityHint?: string; // 👈 opcional, por si querés personalizarlo
 }
 
@@ -15,7 +15,7 @@ export default function CustomButton({
     type = "primary",
     accessibilityHint,
 }: ButtonProps) {
-    const backgroundColor = type === "primary" ? Colors.primary : Colors.secondary;
+    const backgroundColor = type === "primary" ? Colors.primary : type === "secondary" ? Colors.secondary : "#F28B82";
 
     return (
         <TouchableOpacity
