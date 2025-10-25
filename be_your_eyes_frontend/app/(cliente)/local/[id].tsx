@@ -206,17 +206,17 @@ const styles = StyleSheet.create({
     },
 
     menuCard: {
-        backgroundColor: '#E6F8F6',
+        backgroundColor: '#DCF0F0',
         paddingVertical: 18,
         paddingHorizontal: 16,
         borderRadius: 12,
         marginBottom: 10,
         alignItems: 'center',
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 1,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 10,
+        elevation: 10,
     },
     menuName: { 
         fontSize: 18, 

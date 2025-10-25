@@ -74,9 +74,9 @@ export default function TipoRestaurantes() {
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
-    paddingHorizontal: 20, 
+    paddingHorizontal: 16, 
     paddingTop: 10, 
-    backgroundColor: "#fff" 
+    backgroundColor: "#fff", 
   },
   
   title: { 
@@ -107,16 +107,22 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 16 },
 
   card: {
-    backgroundColor: '#E6F8F6', 
+    backgroundColor: '#DCF0F0', 
     paddingVertical: 18,
     paddingHorizontal: 16,
     borderRadius: 12,
-    marginBottom: 10,
+    marginBottom: 16,
+    marginHorizontal: 12,
     alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
   },
   cardText: { 
     fontSize: 18, 
-    color: '#07bcb3', 
+    color: '#242424', 
     fontWeight: '600' 
   },
 

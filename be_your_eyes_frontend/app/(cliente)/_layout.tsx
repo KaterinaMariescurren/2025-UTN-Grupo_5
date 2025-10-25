@@ -46,6 +46,14 @@ export default function RootLayout() {
         name="restaurantes/all" 
         options={commonOptions} 
       />
+      <Stack.Screen
+        name="menu/[id]"
+        options={commonOptions}
+      />
+      <Stack.Screen
+        name="menu/categoria/[id]"
+        options={commonOptions}
+      />
     </Stack>
   );
 }

@@ -28,7 +28,6 @@ export default function LoginScreen() {
     try {
       setLoading(true);
 
-      // 🚀 Cambia esta URL por la de tu backend
       const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -40,8 +39,11 @@ export default function LoginScreen() {
       }
 
       const data = await response.json();
+      if (data.tipo === "persona") {
+        router.replace("/(cliente)/tiporestaurante");
+        return;
+      }
 
-      // Suponiendo que tu backend devuelve { token: "...", user: {...} }
       await login(data.access_token);
 
       router.replace("/(local)"); // navega a home o la pantalla principal
