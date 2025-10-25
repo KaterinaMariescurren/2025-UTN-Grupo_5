@@ -19,7 +19,7 @@ def crear_notificacion(notificacion: NotificacionCrear, db: Session = Depends(ge
             local.tiene_qr = True
         else:
             local.tiene_menu_accesible = False
-            local.tiene_menu_accesible = True
+            local.tiene_qr = False
 
         db.commit()
         db.refresh(local)
