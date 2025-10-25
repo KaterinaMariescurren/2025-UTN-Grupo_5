@@ -12,13 +12,14 @@ function AuthGate() {
   const { accessToken } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
+ /* useEffect(() => {
     if (accessToken) {
       router.replace("/(local)");
     }
   }, [accessToken, router]);
-
+*/
   return <Slot />;
+
 
 }
 
