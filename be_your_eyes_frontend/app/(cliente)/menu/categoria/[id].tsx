@@ -100,13 +100,12 @@ const styles = StyleSheet.create({
   itemContainer: {
     backgroundColor: "#DCF0F0",
     padding: 16,
-    borderBottomWidth: 1,
     borderRadius: 12,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
     marginBottom: 16,
   },
   itemName: {
