@@ -4,6 +4,7 @@ from sqlalchemy import or_
 from app.crud.usuario import crear_usuario
 from app.modelos.direccion import Direccion
 from app.modelos.horario import Horario
+from app.modelos.menu import Menu
 from ..modelos.local import Local
 from ..esquemas.local import LocalCrear, LocalActualizar
 
@@ -83,3 +84,7 @@ def buscar_locales(db: Session, nombre: str = None, tipo_local_id: int = None, d
     if direccion_id:
         query = query.filter(Local.direccion_id == direccion_id)
     return query.all()
+
+def listar_locales_con_menus(db: Session):
+    """Retorna lista de Local que tienen al menos un Menu asociado."""
+    return db.query(Local).join(Menu).group_by(Local.id).all()
