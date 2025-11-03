@@ -1,5 +1,6 @@
 import CustomButton from "@/components/CustomButton";
 import { Colors } from "@/constants/Colors";
+import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useRouter } from "expo-router";
 import { Image, StyleSheet, Text, View } from "react-native";
 
@@ -7,15 +8,16 @@ export default function WelcomeScreen() {
   const router = useRouter();
 
   return (
-    <View style={styles.container} accessible accessibilityLabel="Pantalla de bienvenida">
-      <Image
-        source={require("@/assets/images/logo.png")}
-        style={styles.logo}
-        accessible
-        accessibilityLabel="Logo de Be your eyes"
-      />
+    <View style={GlobalStyles.container} accessible accessibilityLabel="Pantalla de bienvenida">
+      <View style={styles.logoContainer}>
+        <Image
+          source={require("@/assets/images/logo.png")}
+          style={styles.logo}
+          accessible
+          accessibilityLabel="Logo de Be your eyes"
+        />
+      </View>
 
-      {/* Título dividido en dos partes */}
       <View
         style={styles.titleContainer}
         accessible
@@ -29,15 +31,13 @@ export default function WelcomeScreen() {
         </Text>
       </View>
 
-      {/* Botones centrados uno debajo del otro */}
-      <View style={styles.buttonContainer}>
+      <View style={GlobalStyles.containerButton}>
         <CustomButton
           label="Iniciar sesión"
           type="primary"
           onPress={() => router.push("/login")}
           accessibilityHint="Abre la pantalla de inicio de sesión"
         />
-
         <CustomButton
           label="Registrarse"
           type="secondary"
@@ -50,12 +50,12 @@ export default function WelcomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
+  logoContainer: {
+    alignItems: "center", 
+    justifyContent: "center", 
   },
   logo: {
+    justifyContent: "center",
     height: 250,
     width: 250,
     marginTop: "10%",
@@ -74,9 +74,5 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "700",
     color: Colors.primary, // color principal
-  },
-  buttonContainer: {
-    width: "80%",
-    alignItems: "center",
-  },
+  }
 });

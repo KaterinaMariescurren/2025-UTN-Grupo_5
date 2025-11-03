@@ -2,15 +2,19 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, TextInput } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from '@expo/vector-icons';
+import { GlobalStyles } from "@/constants/GlobalStyles";
+import Buscardor from "@/components/Buscador";
+import CardLocal from "@/components/CardLocal";
+import CardButton from "@/components/CardButton";
 
-interface Direccion {
+export interface Direccion {
     id: number;
     altura: string;
     calle: string;
     codigo_postal: string;
 }
 
-interface LocalItem {
+export interface LocalItem {
     id: number;
     nombre: string;
     telefono: string;
@@ -18,7 +22,7 @@ interface LocalItem {
     tipo_local_id: number;
     tiene_menu_accesible: boolean;
     tiene_qr: boolean;
-    direccion: Direccion; 
+    direccion: Direccion;
 }
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -43,11 +47,11 @@ export default function RestaurantesPorTipo() {
                 console.error("Error al cargar el nombre del tipo:", err);
                 setNombreTipo("Tipo Desconocido");
             });
-            
+
         fetch(`${BACKEND_URL}locales/buscar/?tipo_local_id=${tipoId}`)
             .then(res => res.json())
             .then(data => {
-                setLocales(data as LocalItem[]); 
+                setLocales(data as LocalItem[]);
                 setLoading(false);
             })
             .catch(err => {
@@ -57,9 +61,9 @@ export default function RestaurantesPorTipo() {
     }, [tipoId]);
 
     const filteredLocales = locales.filter(item =>
-        item.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        item.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (
-            item.direccion && 
+            item.direccion &&
             `${item.direccion.calle} ${item.direccion.altura}`.toLowerCase().includes(searchTerm.toLowerCase())
         )
     );
@@ -76,44 +80,37 @@ export default function RestaurantesPorTipo() {
                 </View>
             );
         }
-        
+
         return (
             <FlatList
                 data={filteredLocales}
                 keyExtractor={item => item.id.toString()}
                 renderItem={({ item }) => (
-                    <TouchableOpacity
-                        style={styles.card}
+                    <CardButton
+                        name={item.nombre}
+                        address={`${item.direccion.calle} ${item.direccion.altura}`}
+                        tieneMenuAccesible={item.tiene_menu_accesible}
                         onPress={() => router.push(`/local/${item.id}`)}
-                    >
-                        <Text style={styles.name}>{item.nombre}</Text>
-                        <Text style={styles.address}>
-                            {item.direccion ? `${item.direccion.calle} ${item.direccion.altura}` : 'Dirección no disponible'}
-                        </Text>
-                        {item.tiene_menu_accesible && (
-                            <Text style={styles.accesible}>✅ Carta accesible</Text>
-                        )}
-                    </TouchableOpacity>
+                        accessibilityHintText=""
+                        width={"100%"}
+                    />
                 )}
             />
         );
     };
 
     return (
-        <View style={styles.container}>
+        <View style={GlobalStyles.container}>
 
-            <Text style={styles.title}>{nombreTipo}</Text>
-            <Text style={styles.subtitle}>Haga clic para más información</Text>
+            <Text style={GlobalStyles.tittleCliente}>{nombreTipo}</Text>
+            <Text style={GlobalStyles.subtitle}>Haga clic para más información</Text>
 
-            <View style={styles.searchBar}>
-                <Feather name="search" size={20} color="#888" style={{ marginRight: 10 }} />
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Buscar ..."
-                    value={searchTerm}
-                    onChangeText={setSearchTerm}
-                />
-            </View>
+            <Buscardor
+                value={searchTerm}
+                onChangeText={setSearchTerm}
+                placeholder="Buscar restaurantes..."
+                accessibilityLabel="Buscar restaurantes"
+            />
 
             {renderContent()}
 
@@ -122,68 +119,6 @@ export default function RestaurantesPorTipo() {
 }
 
 const styles = StyleSheet.create({
-    container: { 
-        flex: 1, 
-        paddingHorizontal: 20, 
-        paddingTop: 10,
-        backgroundColor: "#fff" 
-    },
-    
-    title: { 
-        fontSize: 24, 
-        fontWeight: "bold",
-        color: '#333', 
-        textAlign: 'center', 
-        marginTop: 10 
-    },
-    subtitle: { 
-        fontSize: 14, 
-        color: '#888',
-        textAlign: 'center', 
-        marginBottom: 20 
-    },
-
-    searchBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#f9f9f9',
-        borderRadius: 25,
-        paddingHorizontal: 15,
-        paddingVertical: 8,
-        marginBottom: 20,
-        borderWidth: 1,
-        borderColor: '#eee',
-    },
-    searchInput: { flex: 1, fontSize: 16 },
-
-    card: {
-        backgroundColor: '#DCF0F0', 
-        padding: 18,
-        borderRadius: 12,
-        marginBottom: 16,
-        marginHorizontal: 12,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.25,
-        shadowRadius: 10,
-        elevation: 10,
-    },
-    name: { 
-        fontSize: 20, 
-        fontWeight: "700", 
-        color: '#242424', 
-        marginBottom: 8,
-    },
-    address: {
-        fontSize: 16,
-        color: '#242424',
-        fontWeight: '400',
-    },
-    accesible: { 
-        color: "green", 
-        marginTop: 5,
-        fontWeight: '500', 
-    },
     loadingIndicator: { marginTop: 50 },
     noDataContainer: { padding: 30, alignItems: 'center' },
     noDataText: { fontSize: 16, color: '#888', textAlign: 'center' }

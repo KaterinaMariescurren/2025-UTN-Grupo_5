@@ -1,5 +1,10 @@
+import CardButton from "@/components/CardButton";
+import CustomButton from "@/components/CustomButton";
+import CustomModal from "@/components/CustomModal";
+import { Colors } from "@/constants/Colors";
+import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useAuth } from "@/contexts/authContext";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -17,10 +22,12 @@ type Menu = {
 };
 
 export default function MenusScreen() {
-  const { accessToken, logout } = useAuth();
+  const { accessToken } = useAuth();
   const [localId, setLocalId] = useState<number | null>(null);
   const [menus, setMenus] = useState<Menu[]>([]);
   const router = useRouter();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [menuBorrar, setMenuBorrar] = useState<Menu | null>(null);
 
   useEffect(() => {
     const fetchLocalId = async () => {
@@ -58,42 +65,28 @@ export default function MenusScreen() {
     };
     fetchMenus();
   }, [accessToken, localId]);
-  const handleEliminarMenu = async (menuId: number) => {
-    Alert.alert(
-      "Eliminar Menú",
-      "¿Estás seguro de que quieres eliminar este menú?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Eliminar",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await fetch(`${process.env.EXPO_PUBLIC_API_URL}menus/${menuId}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${accessToken}` },
-              });
-              // Actualizar la lista local
-              setMenus(menus.filter((m) => m.id !== menuId));
-            } catch (error) {
-              console.error("Error al eliminar menú:", error);
-            }
-          },
-        },
-      ]
-    );
-  };
-  const handleLogout = () => {
-    logout(); // limpia token/contexto
-    router.replace("/login");
+
+  const abrirModal = (menu: Menu) => {
+    setMenuBorrar(menu);
+    setModalVisible(true);
+  }
+
+  const handleEliminarMenu = async () => {
+    try {
+      await fetch(`${process.env.EXPO_PUBLIC_API_URL}menus/${menuBorrar?.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      // Actualizar la lista local
+      setMenus(menus.filter((m) => m.id !== menuBorrar?.id));
+    } catch (error) {
+      console.error("Error al eliminar menú:", error);
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Ionicons name="power" size={28} color="white" />
-      </TouchableOpacity>
-      <Text style={styles.tittle}>MENÚS</Text>
+    <View style={GlobalStyles.container}>
+      <Text style={GlobalStyles.tittle}>Menús</Text>
       <FlatList
         data={menus}
         keyExtractor={(item) => item.id.toString()}
@@ -101,94 +94,71 @@ export default function MenusScreen() {
           <View
             style={{
               flexDirection: "row",
-              justifyContent: "space-between",
               alignItems: "center",
-              height: 60,
-              padding: 15,
-              marginVertical: 10,
-              backgroundColor: "#FFFFFF",
-              borderRadius: 8,
+              gap: 10,
+              marginBottom: 10,
             }}
           >
-            <TouchableOpacity
-              style={{ flex: 1 }}
-              onPress={() =>
-                router.push(`/(local)/categorias?menuId=${item.id}`)
-              }
-            >
-              <Text style={styles.itemtext}>{item.nombre}</Text>
-            </TouchableOpacity>
+            <CardButton
+              name={item.nombre}
+              onPress={() => router.push(`/(local)/categorias?menuId=${item.id}&menuName=${item.nombre}`)}
+              accessibilityHintText={"Toca para ver las categorías del menu "+ item.nombre}
+            />
+            <View style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+            }}>
+              <TouchableOpacity
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel="Descargar menú"
+                accessibilityHint="Toca para descargar el menú"
+              >
+                <MaterialIcons name="file-download" size={24} color={Colors.text} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel="Eliminar menú"
+                accessibilityHint={"Toca para abrir la opcion para eliminar el menú" + item.nombre}
+                onPress={() => abrirModal(item)}
+              >
+                <MaterialIcons name="delete" size={24} color={Colors.cta} />
+              </TouchableOpacity>
+            </View>
 
-            <TouchableOpacity
-              style={{
-                padding: 5,
-                marginLeft: 10,
-                backgroundColor: "#ff4d4f",
-                borderRadius: 5,
-              }}
-              onPress={() => handleEliminarMenu(item.id)}
-            >
-              <Text style={{ color: "white" }}>Eliminar</Text>
-            </TouchableOpacity>
           </View>
         )}
       />
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push(`/(local)/nuevoMenu?localId=${localId}`)}
-      >
-        <Text style={styles.buttontext}>Crear Menú</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push(`/(local)/puntosImpresion`)}
-      >
-        <Text style={styles.buttontext}>Puntos de impresion</Text>
-      </TouchableOpacity>
+      <View style={GlobalStyles.containerButton}>
+        <CustomButton
+          label="Nuevo Menú"
+          onPress={() => router.push(`/(local)/nuevoMenu?localId=${localId}`)}
+          type="primary"
+          accessibilityHint="Abre la pantalla para crear un nuevo menú"
+        />
+        <CustomButton
+          label="Centros de impresion"
+          onPress={() => router.push(`/(local)/puntosImpresion`)}
+          type="secondary"
+          accessibilityHint="Abre la pantalla para buscar los centros de impresion"
+        />
+      </View>
+      <CustomModal
+        visible={modalVisible}
+        nombre={"el menú " + menuBorrar?.nombre}
+        onCancel={() => { setModalVisible(false); setMenuBorrar(null) }}
+        onAccept={() => handleEliminarMenu()}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#50C2C9",
-  },
-  tittle: {
-    paddingTop: 150,
-    fontSize: 36,
-    color: "#FFFFFF",
-    fontWeight: "700",
-    marginBottom: 47,
-    textAlign: "center",
-  },
   itemtext: {
     fontSize: 24,
     fontWeight: 600,
     color: "#000000",
   },
-  button: {
-    backgroundColor: "#BFEAE4",
-    padding: 15,
-    borderRadius: 11,
-    alignItems: "center",
-    marginTop: 20,
-    height: 60,
-    justifyContent: "center",
-    width: "100%",
-    marginBottom: 30,
-  },
-  buttontext: {
-    fontSize: 23,
-    fontWeight: 600,
-    color: "#000000",
-  },
-  logoutButton: {
-    position: "absolute",
-    top: 70,
-    right: 30,
-    zIndex: 1,
-  },
-
 });

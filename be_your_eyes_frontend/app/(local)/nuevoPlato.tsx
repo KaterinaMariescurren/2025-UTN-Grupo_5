@@ -1,16 +1,18 @@
-import { useAuth } from "@/contexts/authContext";
+import CustomButton from "@/components/CustomButton";
+import CustomInput from "@/components/CustomInput";
+import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   Text,
-  TextInput,
-  TouchableOpacity,
   View
 } from "react-native";
 
 export default function NuevoPlatoScreen() {
-  const { accessToken } = useAuth();
   const { menuId, categoriaId } = useLocalSearchParams<{
     menuId: string;
     categoriaId: string;
@@ -63,102 +65,50 @@ export default function NuevoPlatoScreen() {
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        padding: 20,
-        justifyContent: "center",
-        backgroundColor: "#50C2C9",
-      }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={GlobalStyles.container}
     >
-      <Text
-        style={{
-          fontSize: 36,
-          color: "#FFFFFF",
-          fontWeight: "bold",
-          marginBottom: 30,
-          textAlign: "center",
-        }}
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+        keyboardShouldPersistTaps="handled"
       >
-        Nuevo Plato
-      </Text>
-
-      <TextInput
-        value={nombre}
-        onChangeText={setNombre}
-        placeholder="Nombre del plato"
-        placeholderTextColor={"#273431"}
-        style={{
-          backgroundColor: "#FFFFFF",
-          borderWidth: 1,
-          borderColor: "#ccc",
-          padding: 15,
-          borderRadius: 11,
-          marginVertical: 30,
-          height: 60,
-          fontSize: 16,
-        }}
-      />
-
-      <TextInput
-        value={descripcion}
-        onChangeText={setDescripcion}
-        placeholder="Descripción"
-        placeholderTextColor={"#273431"}
-        style={{
-          backgroundColor: "#FFFFFF",
-          borderWidth: 1,
-          borderColor: "#ccc",
-          padding: 15,
-          borderRadius: 11,
-          marginVertical: 30,
-          height: 60,
-          fontSize: 16,
-        }}
-      />
-
-      <TextInput
-        value={precio}
-        onChangeText={setPrecio}
-        placeholder="Precio"
-        keyboardType="numeric"
-        placeholderTextColor={"#273431"}
-        style={{
-          backgroundColor: "#FFFFFF",
-          borderWidth: 1,
-          borderColor: "#ccc",
-          padding: 15,
-          borderRadius: 11,
-          marginVertical: 30,
-          height: 60,
-          fontSize: 16,
-        }}
-      />
-
-      <TouchableOpacity
-        style={{
-          backgroundColor: "#BFEAE4",
-          padding: 15,
-          borderRadius: 11,
-          alignItems: "center",
-          marginTop: 20,
-          height: 60,
-          justifyContent: "center",
-          width: "100%",
-          marginBottom: 30,
-        }}
-        onPress={handleCrearPlato}
-      >
-        <Text
-          style={{
-            fontSize: 23,
-            fontWeight: 600,
-            color: "#000000",
-          }}
-        >
-          Crear Plato
-        </Text>
-      </TouchableOpacity>
-    </View>
+        <Text style={GlobalStyles.tittle}>Nuevo Plato</Text>
+        <View style={GlobalStyles.containerInputs}>
+          <CustomInput
+            label="Nombre del plato"
+            value={nombre}
+            onChangeText={setNombre}
+            placeholder="Ingrese nombre"
+            keyboardType="default"
+            accessibilityHint="Ingresa el nombre del plato"
+          />
+          <CustomInput
+            label="Descripción del plato"
+            value={descripcion}
+            onChangeText={setDescripcion}
+            placeholder="Ingrese la descripción"
+            keyboardType="default"
+            accessibilityHint="Ingresa la descripción del plato"
+          />
+          <CustomInput
+            label="Precio del plato"
+            value={precio}
+            onChangeText={setPrecio}
+            placeholder="Ingrese el precio"
+            keyboardType="numeric"
+            accessibilityHint="Ingresa el precio del plato"
+          />
+        </View>
+        <View style={GlobalStyles.containerButton}>
+          <CustomButton
+            label="Acceptar"
+            onPress={handleCrearPlato}
+            type="primary"
+            accessibilityHint="Acceptar la creacion del plato"
+          />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

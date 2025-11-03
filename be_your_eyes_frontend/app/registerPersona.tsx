@@ -1,9 +1,16 @@
+import CustomButton from "@/components/CustomButton";
+import CustomInput from "@/components/CustomInput";
+import { Colors } from "@/constants/Colors";
+import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useAuth } from "@/contexts/authContext";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -18,6 +25,7 @@ export default function RegisterPersonaScreen() {
   const [email, setEmail] = useState("");
   const [contrasenia, setContrasenia] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { login } = useAuth();
 
@@ -60,92 +68,94 @@ export default function RegisterPersonaScreen() {
   };
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View
+        style={styles.loadingContainer}
+        accessible
+        accessibilityRole="alert"
+        accessibilityLabel="Cargando. Por favor espera."
+      >
         <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
-        Completa los siguientes {"\n"}campos para poder {"\n"}registrarte como
-        cliente{" "}
-      </Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Nombre"
-        value={nombre}
-        onChangeText={setNombre}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Contraseña"
-        value={contrasenia}
-        onChangeText={setContrasenia}
-        secureTextEntry
-      />
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Registrarse</Text>
-      </TouchableOpacity>
-    </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={GlobalStyles.container}
+      accessible
+      accessibilityLabel="Pantalla de registro de cliente"
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View
+          accessible
+          accessibilityRole="header"
+          accessibilityLabel="Completa los siguientes campos para registrarte como cliente."
+        >
+          <Text style={GlobalStyles.tittle}>Completa los siguientes {"\n"}campos para poder {"\n"}registrarte como cliente{" "}</Text>
+        </View>
+        <View
+          style={GlobalStyles.containerInputs}
+          accessible
+          accessibilityLabel="Formulario de registro de cliente. Contiene tres campos: nombre, email y contraseña."
+        >
+          <CustomInput
+            label="Nombre"
+            value={nombre}
+            onChangeText={(text) => setNombre(text)}
+            placeholder="Nombre"
+            keyboardType="default"
+            accessibilityHint="Ingresa tu nombre"
+          />
+          <CustomInput
+            label="Email"
+            value={email}
+            onChangeText={(email) => setEmail(email)}
+            placeholder="Email"
+            keyboardType="email-address"
+            accessibilityHint="Ingresa tu email"
+          />
+          <CustomInput
+            label="Contraseña"
+            value={contrasenia}
+            onChangeText={setContrasenia}
+            placeholder="Contraseña"
+            keyboardType="default"
+            secureTextEntry={!showPassword}
+            accessibilityHint="Ingresa la contraseña"
+            rightIconName={showPassword ? "visibility" : "visibility-off"}
+            rightIconAccessibilityLabel={
+              showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+            }
+            rightIconAccessibilityHint="Toca para alternar la visibilidad de la contraseña"
+            onRightIconPress={() => setShowPassword(!showPassword)}
+          />
+        </View>
+        <View style={GlobalStyles.containerButton}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel="Botón para registrarte como cliente"
+          accessibilityHint="Toca para enviar el formulario de registro"
+        >
+          <CustomButton
+            label="Registrarse"
+            onPress={handleRegister}
+            type="primary"
+            accessibilityHint="Registrarse como cliente"
+          />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#FFFFFF",
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-  },
-  title: {
-    fontSize: 27,
-    fontWeight: "700",
-    marginTop: 100,
-    marginBottom: 57,
-    textAlign: "center",
-    color: "#273431",
-  },
-  input: {
-    height: 56,
-    padding: 16,
-    backgroundColor: "#DCF0F0",
-    borderRadius: 8,
-    marginBottom: 40,
-    fontSize: 16,
-    fontWeight: "400",
-    color: "#242424",
-  },
-  button: {
-    backgroundColor: "#36D9E3",
-    paddingVertical: 20,
-    paddingHorizontal: 62,
-    marginHorizontal: 64,
-    marginTop: 29,
-    borderRadius: 16,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  buttonText: {
-    color: "#242424",
-    fontSize: 16,
-    fontWeight: "500",
-  },
+    backgroundColor: Colors.background,
+  }
 });

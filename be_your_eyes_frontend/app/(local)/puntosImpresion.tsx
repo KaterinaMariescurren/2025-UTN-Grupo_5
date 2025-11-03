@@ -1,3 +1,4 @@
+import { GlobalStyles } from "@/constants/GlobalStyles";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState, useRef } from "react";
@@ -200,16 +201,7 @@ export default function PuntosImpresionScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={28} color="#000000" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Central de impresión</Text>
-      </View>
-
+        <Text style={GlobalStyles.tittle}>Central de impresión</Text>
       <View style={styles.searchContainer}>
         <Ionicons
           name="search"

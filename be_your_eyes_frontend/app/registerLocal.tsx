@@ -4,6 +4,7 @@ import CustomDropdown from "@/components/CustomDropdown";
 import CustomInput from "@/components/CustomInput";
 import CustomTimePicker from "@/components/CustomTimePicker";
 import { Colors } from "@/constants/Colors";
+import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useAuth } from "@/contexts/authContext";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
@@ -181,19 +182,18 @@ export default function RegisterLocalScreen() {
       setLoading(false);
     }
   };
-  
+
   return (
-    <View style={styles.container}>
+    <View style={GlobalStyles.container}>
       {step === 1 && (
         <View>
-          {/* Título principal */}
           <View
             style={styles.titleContainer}
             accessible
             accessibilityRole="header"
             accessibilityLabel="El proceso de registro es rápido y sencillo. Solo necesitarás completar 3 pasos."
           >
-            <Text style={styles.title}>
+            <Text style={GlobalStyles.tittle}>
               El proceso de registro es rápido y sencillo,
             </Text>
             <Text style={styles.titleRed}>
@@ -239,7 +239,7 @@ export default function RegisterLocalScreen() {
               <Text style={styles.pasoTexto}>Información básica</Text>
             </View>
           </View>
-          <View style={styles.inputsContainer}>
+          <View style={GlobalStyles.containerInputs}>
             <CustomInput
               label="Nombre del local"
               value={nombreLocal}
@@ -393,13 +393,14 @@ export default function RegisterLocalScreen() {
               ))
             )}
           </View>
-
-          <CustomButton
-            label="Agregar dia y horario"
-            type="secondary"
-            onPress={openModalForNew}
-            accessibilityHint="Ingresa un dia y horario de apertura"
-          />
+          <View style={GlobalStyles.containerButton}>
+            <CustomButton
+              label="Agregar dia y horario"
+              type="secondary"
+              onPress={openModalForNew}
+              accessibilityHint="Ingresa un dia y horario de apertura"
+            />
+          </View>
 
           {/* Modal */}
           <Modal visible={modalVisible} animationType="slide" transparent>
@@ -500,7 +501,7 @@ export default function RegisterLocalScreen() {
               <Text style={styles.pasoTexto}>Direccion</Text>
             </View>
           </View>
-          <View style={styles.inputsContainer}>
+          <View style={GlobalStyles.containerInputs}>
             <CustomInput
               label="Calle"
               value={calle}
@@ -663,7 +664,7 @@ export default function RegisterLocalScreen() {
         </View>
       )}
 
-      <View style={{ flexDirection: "row", marginTop: 20, gap: 10 }}>
+      <View style={GlobalStyles.containerButton}>
         <CustomButton
           label={step < 4 ? "Siguiente" : "Registrar"}
           type="primary"
@@ -676,23 +677,9 @@ export default function RegisterLocalScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#FFFFFF",
-    justifyContent: "flex-start",
-    marginTop: 50,
-  },
   titleContainer: {
     alignItems: "center",
     marginBottom: 72,
-  },
-  title: {
-    fontSize: 27,
-    fontWeight: "600",
-    color: Colors.text,
-    textAlign: "center",
-    marginTop: 4,
   },
   titleRed: {
     fontSize: 27,
@@ -720,7 +707,8 @@ const styles = StyleSheet.create({
   tituloStep: {
     flex: 1,
     alignItems: "center",
-    marginBottom: 45
+    marginTop: 45,
+    marginBottom: 60
   },
   inputsContainer: {
     width: "100%",

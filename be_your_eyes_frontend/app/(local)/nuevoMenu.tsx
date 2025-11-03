@@ -1,10 +1,11 @@
-import { useAuth } from "@/contexts/authContext";
+import CustomButton from "@/components/CustomButton";
+import CustomInput from "@/components/CustomInput";
+import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 
 export default function NuevoMenuScreen() {
-  const { accessToken } = useAuth();
   const router = useRouter();
   const { localId } = useLocalSearchParams<{ localId: string }>(); // obtener localId desde la URL
   const [nombre, setNombre] = useState("");
@@ -41,67 +42,30 @@ export default function NuevoMenuScreen() {
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        padding: 20,
-        justifyContent: "center",
-        backgroundColor: "#50C2C9",
-      }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={GlobalStyles.container}
     >
-      <Text
-        style={{
-          fontSize: 36,
-          color: "#FFFFFF",
-          fontWeight: "bold",
-          marginBottom: 30,
-          textAlign: "center",
-        }}
-      >
-        Nuevo Menú
-      </Text>
+      <Text style={GlobalStyles.tittle}>Nuevo Menú</Text>
 
-      <TextInput
+      <CustomInput
+        label="Nombre del menú"
         value={nombre}
         onChangeText={setNombre}
         placeholder="Ingrese nombre"
-        placeholderTextColor={"#273431"}
-        style={{
-          backgroundColor: "#FFFFFF",
-          borderWidth: 1,
-          borderColor: "#ccc",
-          padding: 15,
-          borderRadius: 11,
-          marginVertical: 30,
-          height: 60,
-          fontSize: 16,
-        }}
+        keyboardType="default"
+        accessibilityHint="Ingresa el nombre del menú"
       />
 
-      <TouchableOpacity
-        style={{
-          backgroundColor: "#BFEAE4",
-          padding: 15,
-          borderRadius: 11,
-          alignItems: "center",
-          marginTop: 20,
-          height: 60,
-          justifyContent: "center",
-          width: "100%",
-          marginBottom: 30,
-        }}
-        onPress={handleCrearMenu}
-      >
-        <Text
-          style={{
-            fontSize: 23,
-            fontWeight: 600,
-            color: "#000000",
-          }}
-        >
-          Crear Menú
-        </Text>
-      </TouchableOpacity>
-    </View>
+      <View style={GlobalStyles.containerButton}>
+        <CustomButton
+          label="Aceptar"
+          onPress={handleCrearMenu}
+          type="primary"
+          accessibilityHint="Aceptar la creación del menú"
+        />
+      </View>
+    </KeyboardAvoidingView>
   );
+
 }

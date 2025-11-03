@@ -1,6 +1,7 @@
 import CustomButton from "@/components/CustomButton";
 import CustomInput from "@/components/CustomInput";
 import { Colors } from "@/constants/Colors";
+import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useAuth } from "@/contexts/authContext";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -55,16 +56,14 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container} accessible accessibilityLabel="Pantalla de Iniciar sesión">
+    <View style={GlobalStyles.container} accessible accessibilityLabel="Pantalla de Iniciar sesión">
 
-      {/* Títulos */}
       <View style={styles.titleContainer} accessible accessibilityRole="header">
         <Text style={styles.titleBig}>Hola,</Text>
         <Text style={styles.titleSmall}>Vamos a iniciar sesión</Text>
       </View>
 
-      {/* Inputs */}
-      <View style={styles.inputsContainer}>
+      <View style={GlobalStyles.containerInputs}>
         <CustomInput
           label="Email"
           value={email}
@@ -89,15 +88,15 @@ export default function LoginScreen() {
         />
       </View>
 
-      {/* Botón */}
-      <CustomButton
-        label={loading ? "Ingresando..." : "Iniciar Sesión"}
-        type="primary"
-        onPress={handleLogin}
-        accessibilityHint="Abre la pantalla de inicio de sesión"
-      />
+      <View style={GlobalStyles.containerButton}>
+        <CustomButton
+          label={loading ? "Ingresando..." : "Iniciar Sesión"}
+          type="primary"
+          onPress={handleLogin}
+          accessibilityHint="Abre la pantalla de inicio de sesión"
+        />
+      </View>
 
-      {/* Registro */}
       <View style={styles.registerContainer}>
         <Text style={styles.registerText}>¿No tenés cuenta? </Text>
         <TouchableOpacity
@@ -114,14 +113,6 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#FFFFFF",
-    justifyContent: "flex-start",
-    alignItems: "center",
-    marginTop: 50,
-  },
   titleContainer: {
     alignItems: "center",
     marginBottom: 40,
@@ -135,18 +126,14 @@ const styles = StyleSheet.create({
   titleSmall: {
     fontSize: 32,
     fontWeight: "400",
-    color: Colors.primary,
+    color: Colors.text,
     textAlign: "center",
     marginTop: 4,
   },
-  inputsContainer: {
-    width: "100%",
-    marginTop: 45,
-    marginBottom: 45,
-  },
   registerContainer: {
     flexDirection: "row",
-    marginTop: 20,
+    justifyContent:"center",
+    marginTop: 24,
   },
   registerText: {
     fontSize: 16,

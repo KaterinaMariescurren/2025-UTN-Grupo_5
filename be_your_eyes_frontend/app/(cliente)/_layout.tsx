@@ -1,6 +1,7 @@
 import { Stack, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { TouchableOpacity, StyleSheet } from 'react-native';
+import { Colors } from '@/constants/Colors';
 
 const ProfileButton = ({ router }) => (
   <TouchableOpacity onPress={() => router.push('/profile')} style={styles.iconButton}>
@@ -22,7 +23,7 @@ export default function RootLayout() {
     headerRight: () => <ProfileButton router={router} />,
     headerLeft: () => <BackButton router={router} />,
     headerStyle: {
-      backgroundColor: '#FFFFFF',
+      backgroundColor: Colors.background,
       shadowColor: 'transparent',
     },
     headerShadowVisible: false, 
