@@ -20,12 +20,16 @@ def crear_plato(menu_id: int, categoria_id: int, plato_in: plato.PlatoCrear, db:
         raise HTTPException(status_code=404, detail="Menú no encontrado")
 
     # Verificar que la categoría pertenece al menú
-    categorias_ids = [mc.categoria_id for mc in menu.menu_categorias]
-    if categoria_id not in categorias_ids:
+    relacion = db.query(MenuCategoria).filter(
+        MenuCategoria.menu_id == menu_id,
+        MenuCategoria.categoria_id == categoria_id
+    ).first()
+    if not relacion:
         raise HTTPException(status_code=404, detail="Categoría no pertenece a este menú")
 
-    # Crear el plato
-    return crud_plato.crear_plato(db, categoria_id, plato_in)
+    # Crear el plato asociado al MenuCategoria
+    return crud_plato.crear_plato(db, relacion.id, plato_in)
+
 
 
 @router.get("/local/{local_id}", response_model=list[menu.MenuOut])
@@ -104,11 +108,8 @@ def obtener_platos_por_categoria(menu_id: int, categoria_id: int, db: Session = 
         raise HTTPException(status_code=404, detail="La categoría no pertenece a este menú")
     
     # Obtener platos de la categoría
-    categoria = db.query(Categoria).filter(Categoria.id == categoria_id).first()
-    if not categoria:
-        raise HTTPException(status_code=404, detail="Categoría no encontrada")
-    
-    platos = categoria.platos  # relación definida en SQLAlchemy
+    platos = crud_plato.ver_platos_por_categorias(db, relacion.id)
+
     return [{"id": p.id, "nombre": p.nombre, "descripcion": p.descripcion, "precio": p.precio} for p in platos]
 
 # Exportar menú en CSV o TXT
