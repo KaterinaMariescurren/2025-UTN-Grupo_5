@@ -8,8 +8,9 @@ from app.modelos.categoria import Categoria
 from app.modelos.menu_categoria import MenuCategoria
 from app.modelos.plato import Plato
 from app.utilidad.export_menu import export_menu_as_csv, export_menu_as_txt
+from app.utilidad.auth import verificar_token
 
-router = APIRouter(prefix="/menus", tags=["menus"])
+router = APIRouter(prefix="/menus", tags=["menus"], dependencies=[Depends(verificar_token)])
 
 # Crear plato dentro de una categoría de un menú
 @router.post("/{menu_id}/categorias/{categoria_id}/platos", response_model=plato.PlatoOut)
