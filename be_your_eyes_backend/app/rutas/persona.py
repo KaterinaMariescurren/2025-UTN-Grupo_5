@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+
+from app.utilidad.auth import verificar_token
 from ..bd.sesion import get_db
 from ..crud import persona as crud_persona
 from ..esquemas.persona import PersonaCrear, PersonaRespuesta, PersonaActualizar
 
-router = APIRouter(prefix="/personas", tags=["Personas"])
+router = APIRouter(prefix="/personas", tags=["Personas"], dependencies=[Depends(verificar_token)])
 
 @router.post("/", response_model=PersonaRespuesta)
 def crear_persona(persona: PersonaCrear, db: Session = Depends(get_db)):

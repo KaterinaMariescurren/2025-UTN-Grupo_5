@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+
+from app.utilidad.auth import verificar_token
 from ..bd.sesion import get_db
 from ..crud import horario as crud_horario
 from ..esquemas.horario import HorarioCrear, HorarioRespuesta, HorarioActualizar
 
-router = APIRouter(prefix="/horarios", tags=["Horarios"])
+router = APIRouter(prefix="/horarios", tags=["Horarios"], dependencies=[Depends(verificar_token)])
 
 @router.post("/", response_model=HorarioRespuesta)
 def crear_horario(horario: HorarioCrear, db: Session = Depends(get_db)):

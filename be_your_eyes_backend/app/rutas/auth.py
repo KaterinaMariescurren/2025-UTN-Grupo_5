@@ -51,3 +51,13 @@ def obtener_local_id(
 
     return {"local_id": local.id}
 
+@router.get("/me/tipo")
+def obtener_tipo_usuario(user_data: dict = Depends(verificar_token), db: Session = Depends(get_db)):
+
+    tipo_usuario = user_data.get("tipo")
+    usuario = db.query(Usuario).filter(Usuario.email == user_data["email"]).first()
+    if not tipo_usuario:
+        return {"error": "El token no contiene información del tipo de usuario"}
+    return {"tipo": tipo_usuario,
+            "id": usuario.id}
+
