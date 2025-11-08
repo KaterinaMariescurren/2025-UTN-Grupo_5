@@ -8,4 +8,3 @@ class Categoria(Base):
     nombre = Column(String, nullable=False)
 
     menu_categorias = relationship("MenuCategoria", back_populates="categoria", cascade="all, delete-orphan")
-    platos = relationship("Plato", back_populates="categoria", cascade="all, delete-orphan")

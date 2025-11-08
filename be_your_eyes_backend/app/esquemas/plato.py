@@ -11,6 +11,6 @@ class PlatoCrear(BaseModel):
     precio: float
 class PlatoOut(PlatoBase):
     id: int
-    categoria_id: int
+    menu_categoria_id: int
     class Config:
         orm_mode = True

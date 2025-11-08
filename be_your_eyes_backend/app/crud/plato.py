@@ -2,20 +2,20 @@ from sqlalchemy.orm import Session
 from app.esquemas import plato
 from ..modelos.plato import Plato
 
-def crear_plato(db: Session, categoria_id: int, plato_en: plato.PlatoCrear) -> Plato:
+def crear_plato(db: Session, menu_categoria_id: int, plato_en: plato.PlatoCrear) -> Plato:
     plato = Plato(
         nombre=plato_en.nombre,
         descripcion=plato_en.descripcion,
         precio=plato_en.precio,
-        categoria_id=categoria_id
+        menu_categoria_id=menu_categoria_id
     )
     db.add(plato)
     db.commit()
     db.refresh(plato)
     return plato
 
-def ver_platos_por_categorias(db: Session, categoria_id: int):
-    return db.query(Plato).filter(Plato.categoria_id == categoria_id).all()
+def ver_platos_por_categorias(db: Session, menu_categoria_id: int):
+    return db.query(Plato).filter(Plato.menu_categoria_id == menu_categoria_id).all()
 
 def obtener_plato(db: Session, plato_id: int):
     return db.query(Plato).filter(Plato.id == plato_id).first()

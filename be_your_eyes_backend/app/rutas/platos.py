@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 from app.bd.sesion import get_db
 from app.esquemas import plato
 from app.crud import plato as crud_plato
+from app.utilidad.auth import verificar_token
 
-router = APIRouter(prefix="/platos", tags=["platos"])
+router = APIRouter(prefix="/platos", tags=["platos"], dependencies=[Depends(verificar_token)])
 
 # Crear plato directamente (sin menú/categoría explícito)
 @router.post("/categoria/{categoria_id}", response_model=plato.PlatoOut)

@@ -2,6 +2,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
+
+from app.utilidad.auth import verificar_token
 from ..bd.sesion import get_db
 from ..esquemas.punto_impresion import (
     PuntoImpresionSchema,
@@ -12,7 +14,8 @@ from ..crud import punto_impresion as crud
 
 router = APIRouter(
     prefix="/puntos-impresion",
-    tags=["Puntos de Impresión"]
+    tags=["Puntos de Impresión"],
+    dependencies=[Depends(verificar_token)]
 )
 
 @router.get("/", response_model=List[PuntoImpresionSchema])

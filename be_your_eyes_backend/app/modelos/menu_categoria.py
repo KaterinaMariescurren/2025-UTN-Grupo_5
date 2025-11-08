@@ -10,3 +10,4 @@ class MenuCategoria(Base):
 
     menu = relationship("Menu", back_populates="menu_categorias")
     categoria = relationship("Categoria", back_populates="menu_categorias")
+    platos = relationship("Plato", back_populates="menu_categoria", cascade="all, delete-orphan")

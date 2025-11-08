@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+
+from app.utilidad.auth import verificar_token
 from ..bd.sesion import get_db
 from ..crud import direccion as crud_direccion
 from ..esquemas.direccion import DireccionCrear, DireccionRespuesta
 
-router = APIRouter(prefix="/direcciones", tags=["Direcciones"])
+router = APIRouter(prefix="/direcciones", tags=["Direcciones"], dependencies=[Depends(verificar_token)])
 
 @router.post("/", response_model=DireccionRespuesta)
 def crear_direccion(direccion: DireccionCrear, db: Session = Depends(get_db)):

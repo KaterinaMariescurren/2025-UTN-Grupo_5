@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+
+from app.utilidad.auth import verificar_token
 from ..bd.sesion import get_db
 from ..crud import local as crud_local
 from ..esquemas.local import LocalCrear, LocalRespuesta, LocalActualizar
 
-router = APIRouter(prefix="/locales", tags=["Locales"])
+router = APIRouter(prefix="/locales", tags=["Locales"], dependencies=[Depends(verificar_token)])
 
 @router.post("/", response_model=LocalRespuesta)
 def crear_local(local: LocalCrear, db: Session = Depends(get_db)):

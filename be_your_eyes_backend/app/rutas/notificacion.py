@@ -1,12 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+
+from app.utilidad.auth import verificar_token
 from ..bd.sesion import get_db
 from ..crud import notificacion as crud_notificacion
 from ..esquemas.notificacion import NotificacionCrear, NotificacionRespuesta, NotificacionActualizar
 from ..modelos import Local
 
-router = APIRouter(prefix="/notificaciones", tags=["Notificaciones"])
+router = APIRouter(prefix="/notificaciones", tags=["Notificaciones"], dependencies=[Depends(verificar_token)])
 
 @router.post("/", response_model=NotificacionRespuesta)
 def crear_notificacion(notificacion: NotificacionCrear, db: Session = Depends(get_db)):
