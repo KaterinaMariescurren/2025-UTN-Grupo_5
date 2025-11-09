@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, TextInput } from "react-native";
 import { useRouter } from "expo-router";
 import { Feather } from '@expo/vector-icons';
+import { useApi } from "@/utils/api";
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -10,11 +11,12 @@ export default function TodosLosRestaurantes() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { apiFetch } = useApi();
 
   useEffect(() => {
     setLoading(true);
     
-    fetch(`${BACKEND_URL}locales/`)
+    apiFetch(`${BACKEND_URL}locales/`)
       .then(res => res.json())
       .then(data => {
         setLocales(data);

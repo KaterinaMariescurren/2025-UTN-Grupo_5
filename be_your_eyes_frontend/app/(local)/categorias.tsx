@@ -1,6 +1,7 @@
 import { useAuth } from "@/contexts/authContext";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
+import {useApi} from "@/utils/api"
 import {
   Alert,
   FlatList,
@@ -19,15 +20,16 @@ export default function CategoriasScreen() {
   const { menuId } = useLocalSearchParams<{ menuId: string }>();
   const { accessToken } = useAuth();
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const { apiFetch } = useApi();
   const router = useRouter();
 
   useEffect(() => {
     if (!menuId) return;
     const fetchCategorias = async () => {
-      const res = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}menus/${menuId}/categorias`
-      );
+      const res = await apiFetch(`${process.env.EXPO_PUBLIC_API_URL}menus/${menuId}/categorias`);
+
       const data = await res.json();
+      
       setCategorias(data);
     };
     fetchCategorias();
@@ -44,12 +46,10 @@ export default function CategoriasScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              await fetch(
-                `${process.env.EXPO_PUBLIC_API_URL}categorias/${categoriaId}`,
-                {
-                  method: "DELETE",
-                }
-              );
+              await apiFetch(`${process.env.EXPO_PUBLIC_API_URL}categorias/${categoriaId}`, {
+                method: "DELETE",
+              });
+
               // Actualizar la lista local
               setCategorias(categorias.filter((c) => c.id !== categoriaId));
             } catch (error) {
@@ -153,3 +153,5 @@ const styles = StyleSheet.create({
     
     },
 });
+
+

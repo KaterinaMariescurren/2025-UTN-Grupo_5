@@ -1,10 +1,11 @@
 import { useAuth } from "@/contexts/authContext";
+import { useApi } from "@/utils/api";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function NuevoMenuScreen() {
-  const { accessToken } = useAuth();
+  const { apiFetch } = useApi();
   const router = useRouter();
   const { localId } = useLocalSearchParams<{ localId: string }>(); // obtener localId desde la URL
   const [nombre, setNombre] = useState("");
@@ -16,7 +17,7 @@ export default function NuevoMenuScreen() {
     }
 
     try {
-      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}menus/`, {
+      const res = await apiFetch(`${process.env.EXPO_PUBLIC_API_URL}menus/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

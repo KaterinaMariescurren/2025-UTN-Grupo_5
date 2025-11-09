@@ -9,6 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useApi } from "@/utils/api";
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -18,15 +19,16 @@ export default function CategoriaDetalle() {
   const [platos, setPlatos] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const {apiFetch} = useApi();
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    fetch(`${BACKEND_URL}categorias/${id}`)
+    apiFetch(`${BACKEND_URL}categorias/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setCategoria(data);
-        return fetch(`${BACKEND_URL}menus/${menu_id}/categorias/${id}/platos`);
+        return apiFetch(`${BACKEND_URL}menus/${menu_id}/categorias/${id}/platos`);
       })
       .then((res) => res.json())
       .then((data) => setPlatos(data))

@@ -1,10 +1,11 @@
 import { useAuth } from "@/contexts/authContext";
+import { useApi } from "@/utils/api";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function NuevaCategoriaScreen() {
-  const { accessToken } = useAuth();
+  const { apiFetch } = useApi();
   const router = useRouter();
   const { menuId } = useLocalSearchParams<{ menuId: string }>(); // obtener menuId desde la URL
 
@@ -17,7 +18,7 @@ export default function NuevaCategoriaScreen() {
     }
 
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `${process.env.EXPO_PUBLIC_API_URL}menus/${menuId}/categorias/`,
         {
           method: "POST",

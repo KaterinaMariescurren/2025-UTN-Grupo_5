@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, TextInput } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from '@expo/vector-icons';
+import { useApi } from "@/utils/api";
 
 interface Direccion {
     id: number;
@@ -30,13 +31,14 @@ export default function RestaurantesPorTipo() {
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const {apiFetch} = useApi();
 
     useEffect(() => {
         if (!tipoId) return;
 
         setLoading(true);
 
-        fetch(`${BACKEND_URL}tipos_local/${tipoId}`)
+        apiFetch(`${BACKEND_URL}tipos_local/${tipoId}`)
             .then(res => res.json())
             .then(data => setNombreTipo(data.nombre || "Tipo Desconocido"))
             .catch(err => {
@@ -44,7 +46,7 @@ export default function RestaurantesPorTipo() {
                 setNombreTipo("Tipo Desconocido");
             });
             
-        fetch(`${BACKEND_URL}locales/buscar/?tipo_local_id=${tipoId}`)
+        apiFetch(`${BACKEND_URL}locales/buscar/?tipo_local_id=${tipoId}`)
             .then(res => res.json())
             .then(data => {
                 setLocales(data as LocalItem[]); 
