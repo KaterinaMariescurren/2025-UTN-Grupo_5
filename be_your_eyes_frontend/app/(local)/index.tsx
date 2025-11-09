@@ -1,4 +1,5 @@
 import { useAuth } from "@/contexts/authContext";
+import { useApi } from "@/utils/api";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -21,20 +22,15 @@ export default function MenusScreen() {
   const [localId, setLocalId] = useState<number | null>(null);
   const [menus, setMenus] = useState<Menu[]>([]);
   const router = useRouter();
+  const { apiFetch } = useApi();
 
   useEffect(() => {
     const fetchLocalId = async () => {
+      if (!accessToken) return;
       try {
-        const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}me/local_id`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-
-        if (res.status === 401) {
-          // Token inválido, redirigir al login
-          router.replace("/login");
-          return;
-        }
-
+        const res = await apiFetch(
+          `${process.env.EXPO_PUBLIC_API_URL}me/local_id`
+        );
         const data = await res.json();
         setLocalId(data.local_id);
       } catch (error) {
@@ -49,15 +45,20 @@ export default function MenusScreen() {
 
     fetchLocalId();
     const fetchMenus = async () => {
-      const res = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}menus/local/${localId}`,
-        {}
-      );
-      const data = await res.json();
-      setMenus(data);
+      if (!accessToken) return;
+      try {
+        const res = await apiFetch(
+          `${process.env.EXPO_PUBLIC_API_URL}menus/local/${localId}`
+        );
+        const data = await res.json();
+        setMenus(data);
+      } catch (error) {
+        console.error("Error al obtener menús:", error);
+      }
     };
     fetchMenus();
-  }, [accessToken, localId]);
+  }, [accessToken, apiFetch, localId, router]); // sólo depende del token
+
   const handleEliminarMenu = async (menuId: number) => {
     Alert.alert(
       "Eliminar Menú",
@@ -69,10 +70,12 @@ export default function MenusScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              await fetch(`${process.env.EXPO_PUBLIC_API_URL}menus/${menuId}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${accessToken}` },
-              });
+              await apiFetch(
+                `${process.env.EXPO_PUBLIC_API_URL}menus/${menuId}`,
+                {
+                  method: "DELETE",
+                }
+              );
               // Actualizar la lista local
               setMenus(menus.filter((m) => m.id !== menuId));
             } catch (error) {
@@ -190,5 +193,4 @@ const styles = StyleSheet.create({
     right: 30,
     zIndex: 1,
   },
-
 });

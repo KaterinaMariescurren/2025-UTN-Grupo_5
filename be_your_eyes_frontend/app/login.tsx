@@ -1,9 +1,11 @@
 import { useAuth } from "@/contexts/authContext";
+import { useApi } from "@/utils/api";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
+  BackHandler,
   StyleSheet,
   Text,
   TextInput,
@@ -12,12 +14,59 @@ import {
 } from "react-native";
 
 export default function LoginScreen() {
-  const router = useRouter();
-  const { login } = useAuth();
-
   const [email, setEmail] = useState("");
   const [contrasenia, setContrasenia] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
+  const { login, accessToken } = useAuth();
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        router.replace("/");  
+        return true; 
+      };
+
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+
+      return () => subscription.remove();
+    }, [router])
+  );
+
+  useEffect(() => {
+    if (accessToken) {
+      const checkTipo = async () => {
+        try {
+          const response = await fetch(
+            `${process.env.EXPO_PUBLIC_API_URL}me/tipo`,
+            {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            }
+          );
+
+          if (!response.ok) throw new Error("Token inválido");
+
+          const data = await response.json();
+
+          // Redirige según tipo
+          if (data.tipo === "local") {
+            router.replace("/(local)");
+          } else {
+            router.replace("/(cliente)/tiporestaurante");
+          }
+        } catch (error) {
+          console.error("Error verificando token:", error);
+          // Si hay un problema, no hace nada (permite ver el login)
+        }
+      };
+
+      checkTipo();
+    }
+  }, [accessToken, router]);
 
   const handleLogin = async () => {
     if (!email || !contrasenia) {
@@ -37,14 +86,12 @@ export default function LoginScreen() {
       if (!response.ok) {
         throw new Error("Credenciales inválidas");
       }
-
       const data = await response.json();
+      await login(data.access_token);
       if (data.tipo === "persona") {
         router.replace("/(cliente)/tiporestaurante");
         return;
       }
-
-      await login(data.access_token);
 
       router.replace("/(local)"); // navega a home o la pantalla principal
     } catch (error: any) {
