@@ -5,14 +5,18 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
-  ScrollView,
   Modal,
+  FlatList,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { GlobalStyles } from "@/constants/GlobalStyles";
+import { Colors } from "@/constants/Colors";
+import CardButton from "@/components/CardButton";
+import CustomButton from "@/components/CustomButton";
+
 import { useApi } from "@/utils/api";
 import { useAuth } from "@/contexts/authContext";
-// import { useAuth } from '@/contexts/authContext';
+
 interface Horario {
   dia: string;
   horario_apertura: string;
@@ -73,7 +77,7 @@ export default function DetalleLocal() {
 
     try {
       const response = await apiFetch(`${BACKEND_URL}me/tipo`);
-      const data = await response.json(); 
+      const data = await response.json();
 
       await apiFetch(`${BACKEND_URL}notificaciones/`, {
         method: "POST",
@@ -101,12 +105,12 @@ export default function DetalleLocal() {
     );
 
   return (
-    <View style={styles.fullContainer}>
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.localNameTitle}>{local.nombre}</Text>
+    <View style={GlobalStyles.container}>
+      <Text style={GlobalStyles.tittle}>{local.nombre}</Text>
 
-        <Text style={styles.sectionTitle}>Horarios</Text>
+      <Text style={styles.sectionTitle}>Horarios</Text>
 
+      <View style={{ marginBottom: 32 }}>
         {local.horarios && local.horarios.length > 0 ? (
           local.horarios.map((h, index) => (
             <Text key={index} style={styles.horarioText}>
@@ -117,35 +121,34 @@ export default function DetalleLocal() {
         ) : (
           <Text style={styles.horarioText}>Horarios no disponibles</Text>
         )}
+      </View>
 
-        <View style={styles.divider} />
-
+      <View style={styles.containerMenus}>
         <Text style={styles.sectionTitle}>Menús</Text>
         <Text style={styles.menuSubtitle}>Haga clic para más información</Text>
 
-        {menus.length === 0 ? (
-          <Text style={styles.noMenus}>No hay menús disponibles</Text>
-        ) : (
-          menus.map((menu: any) => (
-            <TouchableOpacity
-              key={menu.id}
-              style={styles.menuCard}
-              onPress={() => router.push(`/menu/${menu.id}`)}
-            >
-              <Text style={styles.menuName}>{menu.nombre}</Text>
-            </TouchableOpacity>
-          ))
-        )}
+        <FlatList
+          data={menus}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <CardButton
+              name={item.nombre}
+              onPress={() => router.push(`/local/${item.id}`)}
+              accessibilityHintText=""
+              width={"100%"}
+            />
+          )}
+        />
+      </View>
 
-        <View style={{ height: 100 }} />
-      </ScrollView>
-
-      <TouchableOpacity
-        style={styles.notifyButtonFixed}
-        onPress={() => setShowModal(true)}
-      >
-        <Text style={styles.notifyTextFixed}>Notificar Cumplimiento</Text>
-      </TouchableOpacity>
+      <View style={GlobalStyles.containerButton}>
+        <CustomButton
+          label="Notificar Cumplimiento"
+          onPress={() => setShowModal(true)}
+          type="primary"
+          accessibilityHint="Acceptar la creacion del plato"
+        />
+      </View>
 
       <Modal
         animationType="fade"
@@ -185,34 +188,20 @@ export default function DetalleLocal() {
 }
 
 const styles = StyleSheet.create({
-  fullContainer: { flex: 1, backgroundColor: "#fff" },
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   loadingText: { fontSize: 16, color: "#555" },
-  contentContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
-  },
-
-  localNameTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#333",
-    textAlign: "center",
-    marginBottom: 20,
-  },
-
   sectionTitle: {
-    fontSize: 20,
+    paddingTop: 16,
+    fontSize: 27,
     fontWeight: "bold",
     color: "#333",
     textAlign: "center",
-    marginTop: 15,
     marginBottom: 8,
   },
   horarioText: {
     fontSize: 16,
-    color: "#555",
+    color: Colors.text,
+    fontWeight: 500,
     textAlign: "center",
     lineHeight: 24,
   },
@@ -222,60 +211,19 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 25,
   },
-  noMenus: {
-    textAlign: "center",
-    color: "#888",
-    marginTop: 10,
-  },
-
-  divider: {
-    borderBottomColor: "#ccc",
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    marginVertical: 25,
-  },
-
-  menuCard: {
-    backgroundColor: "#DCF0F0",
-    paddingVertical: 18,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    marginBottom: 10,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 10,
+  containerMenus: {
+    height: "65%",
+    marginBottom: 20,
+    borderTopColor: Colors.text,
+    borderTopWidth: 2,
+    borderBottomColor: Colors.text,
+    borderBottomWidth: 2,
   },
   menuName: {
     fontSize: 18,
     color: "#333",
     fontWeight: "600",
   },
-
-  notifyButtonFixed: {
-    position: "absolute",
-    bottom: 0,
-    left: 20,
-    right: 20,
-    backgroundColor: "#07bcb3",
-    paddingVertical: 15,
-    borderRadius: 30,
-    alignItems: "center",
-    marginBottom: 20,
-    zIndex: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
-  },
-  notifyTextFixed: {
-    fontSize: 18,
-    color: "#fff",
-    fontWeight: "bold",
-  },
-
   modalBackground: {
     flex: 1,
     justifyContent: "center",

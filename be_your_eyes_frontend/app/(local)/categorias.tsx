@@ -1,11 +1,15 @@
-import { useAuth } from "@/contexts/authContext";
+import CardButton from "@/components/CardButton";
+import CustomButton from "@/components/CustomButton";
+import CustomModal from "@/components/CustomModal";
+import { Colors } from "@/constants/Colors";
+import { GlobalStyles } from "@/constants/GlobalStyles";
+import MaterialIcons from "@expo/vector-icons/build/MaterialIcons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {useApi} from "@/utils/api"
 import {
   Alert,
   FlatList,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View
@@ -17,9 +21,10 @@ type Categoria = {
 };
 
 export default function CategoriasScreen() {
-  const { menuId } = useLocalSearchParams<{ menuId: string }>();
-  const { accessToken } = useAuth();
+  const { menuId, menuName } = useLocalSearchParams<{ menuId: string, menuName: string }>();
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [categoriaBorrar, setCategoriaBorrar] = useState<Categoria | null>(null);
   const { apiFetch } = useApi();
   const router = useRouter();
 
@@ -35,36 +40,30 @@ export default function CategoriasScreen() {
     fetchCategorias();
   }, [menuId]);
 
-  const handleEliminarCategoria = (categoriaId: number) => {
-    Alert.alert(
-      "Eliminar Categoría",
-      "¿Estás seguro de que quieres eliminar esta categoría?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Eliminar",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await apiFetch(`${process.env.EXPO_PUBLIC_API_URL}categorias/${categoriaId}`, {
-                method: "DELETE",
-              });
+  const abrirModal = (categoria: Categoria) => {
+    setCategoriaBorrar(categoria);
+    setModalVisible(true);
+  }
 
-              // Actualizar la lista local
-              setCategorias(categorias.filter((c) => c.id !== categoriaId));
-            } catch (error) {
-              console.error("Error al eliminar categoría:", error);
-              Alert.alert("Error", "No se pudo eliminar la categoría");
-            }
-          },
-        },
-      ]
-    );
+  const handleEliminarCategoria = async () => {
+    try {
+      await apiFetch(
+        `${process.env.EXPO_PUBLIC_API_URL}categorias/${categoriaBorrar?.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+      // Actualizar la lista local
+      setCategorias(categorias.filter((c) => c.id !== categoriaBorrar?.id));
+    } catch (error) {
+      console.error("Error al eliminar categoría:", error);
+      Alert.alert("Error", "No se pudo eliminar la categoría");
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.tittle}>Categorías</Text>
+    <View style={GlobalStyles.container}>
+      <Text style={GlobalStyles.tittle}>Categorías del {"\n"} Menú {menuName}</Text>
       <FlatList
         data={categorias}
         keyExtractor={(item) => item.id.toString()}
@@ -72,86 +71,42 @@ export default function CategoriasScreen() {
           <View
             style={{
               flexDirection: "row",
-              justifyContent: "space-between",
               alignItems: "center",
-              height: 60,
-              padding: 15,
-              marginVertical: 10,
-              backgroundColor: "#FFFFFF",
-              borderRadius: 8,
+              gap: 20,
+              marginBottom: 10,
             }}
           >
+            <CardButton
+              name={item.nombre}
+              onPress={() => router.push(`/(local)/platos?menuId=${menuId}&categoriaId=${item.id}`)}
+              accessibilityHintText={"Toca para ver los diferentes platos de la categoría" + item.nombre}
+            />
             <TouchableOpacity
-              style={{ flex: 1 }}
-              onPress={() =>
-                router.push(
-                  `/(local)/platos?menuId=${menuId}&categoriaId=${item.id}`
-                )
-              }
+              onPress={() => abrirModal(item)}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel="Eliminar categoría"
+              accessibilityHint={"Toca para abrir la opcion para eliminar la categoría" + item.nombre}
             >
-              <Text style={styles.itemtext}>{item.nombre}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={{
-                padding: 5,
-                marginLeft: 10,
-                backgroundColor: "#ff4d4f",
-                borderRadius: 5,
-              }}
-              onPress={() => handleEliminarCategoria(item.id)}
-            >
-              <Text style={{ color: "white" }}>Eliminar</Text>
+              <MaterialIcons name="delete" size={24} color={Colors.cta} />
             </TouchableOpacity>
           </View>
         )}
       />
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push(`/(local)/nuevaCategoria?menuId=${menuId}`)}
-      >
-        <Text style={styles.buttontext}>Crear Categoría</Text>
-      </TouchableOpacity>
+      <View style={GlobalStyles.containerButton}>
+        <CustomButton
+          label="Nueva Categoría"
+          onPress={() => router.push(`/(local)/nuevaCategoria?menuId=${menuId}`)}
+          type="primary"
+          accessibilityHint="Abre la pantalla para crear una nueva categoría"
+        />
+      </View>
+      <CustomModal
+        visible={modalVisible}
+        nombre={"la categoría " + categoriaBorrar?.nombre}
+        onCancel={() => { setModalVisible(false); setCategoriaBorrar(null) }}
+        onAccept={() => handleEliminarCategoria()}
+      />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#50C2C9",
-  },
-  tittle: {
-    paddingTop: 150,
-    fontSize: 36,
-    color: "#FFFFFF",
-    fontWeight: "700",
-    marginBottom: 47,
-    textAlign: "center",
-  },
-  itemtext:{
-    fontSize: 24,
-    fontWeight: 600,
-    color: "#000000",
-  },
-  button: {
-    backgroundColor: "#BFEAE4",
-    padding: 15,
-    borderRadius: 11,
-    alignItems: "center",
-    marginTop: 20,
-    height: 60,
-    justifyContent: "center",
-    width: "100%",
-    marginBottom: 30,
-  },
-  buttontext: {
-    fontSize: 23,
-    fontWeight: 600,
-    color: "#000000",
-    
-    },
-});
-
-

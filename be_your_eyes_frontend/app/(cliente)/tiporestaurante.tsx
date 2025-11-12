@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, TextInput } from "react-native";
+import { View, Text, FlatList, StyleSheet, Platform, ScrollView, KeyboardAvoidingView } from "react-native";
 import { useRouter } from "expo-router";
-import { Feather } from '@expo/vector-icons';
+import { Colors } from "@/constants/Colors";
+import CardButton from "@/components/CardButton";
+import { GlobalStyles } from "@/constants/GlobalStyles";
+import CustomButton from "@/components/CustomButton";
+import Buscardor from "@/components/Buscador";
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -17,12 +21,12 @@ export default function TipoRestaurantes() {
       .catch(err => console.error(err));
   }, []);
 
-  const handleTypePress = (id) => {
+  const handleTypePress = (id: number) => {
     router.push(`/restaurantes/${id}`);
   };
 
   const handleAllRestaurants = () => {
-    router.push(`/restaurantes/all`); 
+    router.push(`/restaurantes/all`);
   };
 
   const filteredTipos = tipos.filter(item =>
@@ -30,67 +34,70 @@ export default function TipoRestaurantes() {
   );
 
   return (
-    <View style={styles.container}>
-      
-      <Text style={styles.title}>Tipo de Restaurantes</Text>
-      <Text style={styles.subtitle}>Haga clic para más información</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={GlobalStyles.container}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+        keyboardShouldPersistTaps="handled"
+      >
 
-      <View style={styles.searchBar}>
-        <Feather name="search" size={20} color="#888" style={{ marginRight: 10 }} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Buscar..."
+        <Text style={GlobalStyles.tittleCliente}>Tipo de Restaurantes</Text>
+        <Text style={GlobalStyles.subtitle}>Haga clic para más información</Text>
+
+        <Buscardor
           value={searchTerm}
           onChangeText={setSearchTerm}
+          placeholder="Buscar restaurantes..."
+          accessibilityLabel="Buscar restaurantes"
         />
-      </View>
 
-      <FlatList
-        data={filteredTipos}
-        keyExtractor={item => item.id.toString()}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() => handleTypePress(item.id)}
-          >
-            <Text style={styles.cardText}>{item.nombre}</Text>
-          </TouchableOpacity>
-        )}
-        contentContainerStyle={{ paddingBottom: 20 }} 
-        style={{ flexGrow: 0 }}
-      />
-
-      <TouchableOpacity
-        style={styles.allRestaurantsButton}
-        onPress={handleAllRestaurants}
-      >
-        <Text style={styles.allRestaurantsText}>Todos los restaurantes</Text>
-      </TouchableOpacity>
-
-    </View>
+        <FlatList
+          data={filteredTipos}
+          keyExtractor={item => item.id.toString()}
+          renderItem={({ item }) => (
+            <CardButton
+              name={item.nombre}
+              onPress={() => handleTypePress(item.id)}
+              accessibilityHintText={"Toca para ver las diferentes categorías del menu" + item.nombre}
+              width={"100%"}
+            />
+          )}
+        />
+        <View style={GlobalStyles.containerButton}>
+          <CustomButton
+            label="Todos los restaurantes"
+            onPress={handleAllRestaurants}
+            type="primary"
+            accessibilityHint="Muestra todos los restaurantes"
+          />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    paddingHorizontal: 16, 
-    paddingTop: 10, 
-    backgroundColor: "#fff", 
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    backgroundColor: Colors.background,
   },
-  
-  title: { 
-    fontSize: 24, 
-    fontWeight: "bold", 
-    color: '#333', 
-    textAlign: 'center', 
-    marginTop: 10 
+
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: '#333',
+    textAlign: 'center',
+    marginTop: 10
   },
-  subtitle: { 
-    fontSize: 14, 
-    color: '#888', 
-    textAlign: 'center', 
-    marginBottom: 20 
+  subtitle: {
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
+    marginBottom: 20
   },
 
   searchBar: {
@@ -107,7 +114,7 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 16 },
 
   card: {
-    backgroundColor: '#DCF0F0', 
+    backgroundColor: '#DCF0F0',
     paddingVertical: 18,
     paddingHorizontal: 16,
     borderRadius: 12,
@@ -120,14 +127,14 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 10,
   },
-  cardText: { 
-    fontSize: 18, 
-    color: '#242424', 
-    fontWeight: '600' 
+  cardText: {
+    fontSize: 18,
+    color: '#242424',
+    fontWeight: '600'
   },
 
   allRestaurantsButton: {
-    backgroundColor: '#07bcb3', 
+    backgroundColor: '#07bcb3',
     paddingVertical: 15,
     borderRadius: 30,
     marginBottom: 30,

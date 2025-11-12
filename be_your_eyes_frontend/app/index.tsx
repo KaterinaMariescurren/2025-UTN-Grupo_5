@@ -1,7 +1,10 @@
-import { useAuth } from "@/contexts/authContext";
+import CustomButton from "@/components/CustomButton";
+import { Colors } from "@/constants/Colors";
+import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useRouter } from "expo-router";
+import { Image, StyleSheet, Text, View } from "react-native";
+import { useAuth } from "@/contexts/authContext";
 import { useEffect } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -40,67 +43,71 @@ export default function WelcomeScreen() {
     }, [accessToken, router]);
 
   return (
-    <View style={styles.container}>
-      <Image source={require("@/assets/images/logo.png")} style={styles.logo} />
-      <Text style={styles.title}>Bienvenido a{"\n"}Be your eyes</Text>
+    <View style={GlobalStyles.container} accessible accessibilityLabel="Pantalla de bienvenida">
+      <View style={styles.logoContainer}>
+        <Image
+          source={require("@/assets/images/logo.png")}
+          style={styles.logo}
+          accessible
+          accessibilityLabel="Logo de Be your eyes"
+        />
+      </View>
 
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={() => router.push("/login")}
+      <View
+        style={styles.titleContainer}
+        accessible
+        accessibilityLabel="Bienvenido a Be your eyes"
       >
-        <Text style={styles.buttonText}>Iniciar Sesión</Text>
-      </TouchableOpacity>
+        <Text style={styles.welcomeText} accessible={false}>
+          Bienvenido a
+        </Text>
+        <Text style={styles.appName} accessible={false}>
+          Be your eyes
+        </Text>
+      </View>
 
-      <TouchableOpacity 
-        style={[styles.button, styles.secondaryButton]} 
-        onPress={() => router.push("/register")}
-      >
-        <Text style={styles.buttonText}>Registrarse</Text>
-      </TouchableOpacity>
+      <View style={GlobalStyles.containerButton}>
+        <CustomButton
+          label="Iniciar sesión"
+          type="primary"
+          onPress={() => router.push("/login")}
+          accessibilityHint="Abre la pantalla de inicio de sesión"
+        />
+        <CustomButton
+          label="Registrarse"
+          type="secondary"
+          onPress={() => router.push("/register")}
+          accessibilityHint="Abre la pantalla de registro de usuario"
+        />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
+  logoContainer: {
     alignItems: "center", 
-    backgroundColor: "#FFFFFF" 
-},
-  logo: { 
+    justifyContent: "center", 
+  },
+  logo: {
+    justifyContent: "center",
     height: 250,
     width: 250,
-    marginTop: 100,
-    marginBottom: 46
-},
-  title: { 
-    fontSize: 36, 
-    fontWeight: 700, 
-    marginBottom: 47, 
-    textAlign: "center", 
-    color: "#50C2C9" 
-},
-  button: { 
-    backgroundColor: "#BFEAE4", 
-    padding: 15, 
-    borderRadius: 11, 
-    width: "80%", 
-    height: 60,
+    marginTop: "10%",
+    marginBottom: 46,
+  },
+  titleContainer: {
     alignItems: "center",
-    marginBottom: 30,
-},
-  secondaryButton: {  
-    backgroundColor: "#BFEAE4", 
-    padding: 15, 
-    borderRadius: 11, 
-    width: "80%", 
-    height: 60,
-    alignItems: "center",
-    marginBottom: 30
-},
-  buttonText: { 
-    color: "#000000", 
-    fontWeight: 600, 
-    fontSize: 23 
-},
+    marginBottom: 47,
+  },
+  welcomeText: {
+    fontSize: 40, // más grande que antes
+    fontWeight: "700",
+    color: "#000000",
+  },
+  appName: {
+    fontSize: 32,
+    fontWeight: "700",
+    color: Colors.primary, // color principal
+  }
 });

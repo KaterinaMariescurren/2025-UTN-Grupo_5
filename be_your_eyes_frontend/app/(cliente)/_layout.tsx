@@ -1,3 +1,4 @@
+import { Colors } from '@/constants/Colors';
 import { Stack, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { TouchableOpacity, StyleSheet } from "react-native";
@@ -35,8 +36,8 @@ export default function RootLayout() {
     headerRight: () => <ProfileButton router={router} />,
     headerLeft: () => <BackButton router={router} />,
     headerStyle: {
-      backgroundColor: "#FFFFFF",
-      shadowColor: "transparent",
+      backgroundColor: Colors.background,
+      shadowColor: 'transparent',
     },
     headerShadowVisible: false,
   };
