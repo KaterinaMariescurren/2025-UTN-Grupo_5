@@ -1,4 +1,5 @@
 import { GlobalStyles } from "@/constants/GlobalStyles";
+import { useApi } from "@/utils/api";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState, useRef } from "react";
@@ -40,6 +41,7 @@ export default function PuntosImpresionScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
+  const { apiFetch } = useApi();
 
   const animatedHeight = useRef(new Animated.Value(BOTTOM_SHEET_MIN_HEIGHT)).current;
   const mapRef = useRef<MapView>(null);
@@ -63,7 +65,7 @@ export default function PuntosImpresionScreen() {
 
   const fetchPuntos = async () => {
     try {
-      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}puntos-impresion/`);
+      const res = await apiFetch(`${process.env.EXPO_PUBLIC_API_URL}puntos-impresion/`);
       
       if (!res.ok) {
         throw new Error("Error al cargar los puntos");

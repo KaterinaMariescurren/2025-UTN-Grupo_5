@@ -3,9 +3,44 @@ import { Colors } from "@/constants/Colors";
 import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useRouter } from "expo-router";
 import { Image, StyleSheet, Text, View } from "react-native";
+import { useAuth } from "@/contexts/authContext";
+import { useEffect } from "react";
 
 export default function WelcomeScreen() {
   const router = useRouter();
+    const { accessToken } = useAuth();
+  
+    useEffect(() => {
+      // Si ya hay un token, redirigir automáticamente
+      if (accessToken) {
+        const checkTipo = async () => {
+          try {
+            const response = await fetch(
+              `${process.env.EXPO_PUBLIC_API_URL}me/tipo`,
+              {
+                headers: { Authorization: `Bearer ${accessToken}` },
+              }
+            );
+  
+            if (!response.ok) throw new Error("Token inválido");
+  
+            const data = await response.json();
+  
+            // Redirige según tipo
+            if (data.tipo === "local") {
+              router.replace("/(local)");
+            } else {
+              router.replace("/(cliente)/tiporestaurante");
+            }
+          } catch (error) {
+            console.error("Error verificando token:", error);
+            // Si hay un problema, no hace nada (permite ver el login)
+          }
+        };
+  
+        checkTipo();
+      }
+    }, [accessToken, router]);
 
   return (
     <View style={GlobalStyles.container} accessible accessibilityLabel="Pantalla de bienvenida">

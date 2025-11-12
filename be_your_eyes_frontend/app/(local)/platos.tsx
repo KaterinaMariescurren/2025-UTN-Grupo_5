@@ -5,6 +5,7 @@ import { Colors } from "@/constants/Colors";
 import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useAuth } from "@/contexts/authContext";
 import MaterialIcons from "@expo/vector-icons/build/MaterialIcons";
+import { useApi } from "@/utils/api";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -32,20 +33,16 @@ export default function PlatosScreen() {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [platoBorrar, setPlatoBorrar] = useState<Plato | null>(null);
+  const { apiFetch } = useApi();
 
   useEffect(() => {
     const fetchPlatos = async () => {
       if (!menuId || !categoriaId) return;
 
       try {
-        const res = await fetch(
+        const res = await apiFetch(
           `${process.env.EXPO_PUBLIC_API_URL}menus/${menuId}/categorias/${categoriaId}/platos`
         );
-
-        if (res.status === 401) {
-          router.replace("/login"); // token inválido
-          return;
-        }
 
         if (!res.ok) {
           const data = await res.json();

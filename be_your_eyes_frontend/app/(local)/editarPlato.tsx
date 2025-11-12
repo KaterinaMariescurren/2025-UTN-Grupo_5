@@ -2,6 +2,7 @@ import CustomButton from "@/components/CustomButton";
 import CustomInput from "@/components/CustomInput";
 import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useAuth } from "@/contexts/authContext";
+import { useApi } from "@/utils/api";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -14,6 +15,7 @@ export default function EditarPlatoScreen() {
     platoId: string;
   }>();
   const router = useRouter();
+  const { apiFetch } = useApi();
 
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -25,14 +27,7 @@ export default function EditarPlatoScreen() {
       if (!platoId) return;
 
       try {
-        const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}platos/${platoId}`, {
-          headers: {},
-        });
-
-        if (res.status === 401) {
-          router.replace("/login");
-          return;
-        }
+        const res = await apiFetch(`${process.env.EXPO_PUBLIC_API_URL}platos/${platoId}`);
 
         if (!res.ok) {
           const data = await res.json();
@@ -59,11 +54,10 @@ export default function EditarPlatoScreen() {
     }
 
     try {
-      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}platos/${platoId}`, {
+      const res = await apiFetch(`${process.env.EXPO_PUBLIC_API_URL}platos/${platoId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           nombre,
@@ -71,12 +65,7 @@ export default function EditarPlatoScreen() {
           precio: parseFloat(precio),
         }),
       });
-
-      if (res.status === 401) {
-        router.replace("/login");
-        return;
-      }
-
+      
       const data = await res.json();
 
       if (!res.ok) {

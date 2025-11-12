@@ -6,6 +6,7 @@ import { GlobalStyles } from "@/constants/GlobalStyles";
 import MaterialIcons from "@expo/vector-icons/build/MaterialIcons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
+import {useApi} from "@/utils/api"
 import {
   Alert,
   FlatList,
@@ -24,15 +25,16 @@ export default function CategoriasScreen() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [categoriaBorrar, setCategoriaBorrar] = useState<Categoria | null>(null);
+  const { apiFetch } = useApi();
   const router = useRouter();
 
   useEffect(() => {
     if (!menuId) return;
     const fetchCategorias = async () => {
-      const res = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}menus/${menuId}/categorias`
-      );
+      const res = await apiFetch(`${process.env.EXPO_PUBLIC_API_URL}menus/${menuId}/categorias`);
+
       const data = await res.json();
+      
       setCategorias(data);
     };
     fetchCategorias();
@@ -45,7 +47,7 @@ export default function CategoriasScreen() {
 
   const handleEliminarCategoria = async () => {
     try {
-      await fetch(
+      await apiFetch(
         `${process.env.EXPO_PUBLIC_API_URL}categorias/${categoriaBorrar?.id}`,
         {
           method: "DELETE",

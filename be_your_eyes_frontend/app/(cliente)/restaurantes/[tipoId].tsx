@@ -6,6 +6,7 @@ import { GlobalStyles } from "@/constants/GlobalStyles";
 import Buscardor from "@/components/Buscador";
 import CardLocal from "@/components/CardLocal";
 import CardButton from "@/components/CardButton";
+import { useApi } from "@/utils/api";
 
 export interface Direccion {
     id: number;
@@ -34,21 +35,22 @@ export default function RestaurantesPorTipo() {
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const {apiFetch} = useApi();
 
     useEffect(() => {
         if (!tipoId) return;
 
         setLoading(true);
 
-        fetch(`${BACKEND_URL}tipos_local/${tipoId}`)
+        apiFetch(`${BACKEND_URL}tipos_local/${tipoId}`)
             .then(res => res.json())
             .then(data => setNombreTipo(data.nombre || "Tipo Desconocido"))
             .catch(err => {
                 console.error("Error al cargar el nombre del tipo:", err);
                 setNombreTipo("Tipo Desconocido");
             });
-
-        fetch(`${BACKEND_URL}locales/buscar/?tipo_local_id=${tipoId}`)
+            
+        apiFetch(`${BACKEND_URL}locales/buscar/?tipo_local_id=${tipoId}`)
             .then(res => res.json())
             .then(data => {
                 setLocales(data as LocalItem[]);
