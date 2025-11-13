@@ -6,8 +6,8 @@ import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useAuth } from "@/contexts/authContext";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useApi } from "@/utils/api";
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -31,45 +31,43 @@ export default function MenusScreen() {
   const [menuBorrar, setMenuBorrar] = useState<Menu | null>(null);
   const { apiFetch } = useApi();
 
-  useEffect(() => {
-    const fetchLocalId = async () => {
-      if (!accessToken) return;
-      try {
-        const res = await apiFetch(
-          `${process.env.EXPO_PUBLIC_API_URL}me/local_id`
-        );
-        const data = await res.json();
-        setLocalId(data.local_id);
-      } catch (error) {
-        console.error("Error al obtener localId:", error);
-        Alert.alert(
-          "Error",
-          "No se pudo obtener el local. Por favor, logueate nuevamente."
-        );
-        router.replace("/login");
-      }
-    };
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        if (!accessToken) return;
 
-    fetchLocalId();
-    const fetchMenus = async () => {
-      if (!accessToken) return;
-      try {
-        const res = await apiFetch(
-          `${process.env.EXPO_PUBLIC_API_URL}menus/local/${localId}`
-        );
-        const data = await res.json();
-        setMenus(data);
-      } catch (error) {
-        console.error("Error al obtener menús:", error);
-      }
-    };
-    fetchMenus();
-  }, [accessToken, localId]);
+        try {
+          // 1️⃣ Obtener localId
+          const resLocal = await apiFetch(
+            `${process.env.EXPO_PUBLIC_API_URL}me/local_id`
+          );
+          const dataLocal = await resLocal.json();
+          setLocalId(dataLocal.local_id);
+
+          // 2️⃣ Obtener menús
+          const resMenus = await apiFetch(
+            `${process.env.EXPO_PUBLIC_API_URL}menus/local/${dataLocal.local_id}`
+          );
+          const dataMenus = await resMenus.json();
+          setMenus(dataMenus);
+        } catch (error) {
+          console.error("Error al obtener datos:", error);
+          Alert.alert(
+            "Error",
+            "No se pudieron obtener los datos. Por favor, logueate nuevamente."
+          );
+          router.replace("/login");
+        }
+      };
+
+      fetchData();
+    }, [accessToken])
+  );
 
   const abrirModal = (menu: Menu) => {
     setMenuBorrar(menu);
     setModalVisible(true);
-  }
+  };
 
   const handleEliminarMenu = async () => {
     try {
@@ -79,6 +77,8 @@ export default function MenusScreen() {
       });
       // Actualizar la lista local
       setMenus(menus.filter((m) => m.id !== menuBorrar?.id));
+      setModalVisible(false);
+      setMenuBorrar(null);
     } catch (error) {
       console.error("Error al eliminar menú:", error);
     }
@@ -101,33 +101,47 @@ export default function MenusScreen() {
           >
             <CardButton
               name={item.nombre}
-              onPress={() => router.push(`/(local)/categorias?menuId=${item.id}&menuName=${item.nombre}`)}
-              accessibilityHintText={"Toca para ver las categorías del menu "+ item.nombre}
+              onPress={() =>
+                router.push(
+                  `/(local)/categorias?menuId=${item.id}&menuName=${item.nombre}`
+                )
+              }
+              accessibilityHintText={
+                "Toca para ver las categorías del menu " + item.nombre
+              }
             />
-            <View style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 10,
-            }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
               <TouchableOpacity
                 accessible
                 accessibilityRole="button"
                 accessibilityLabel="Descargar menú"
                 accessibilityHint="Toca para descargar el menú"
               >
-                <MaterialIcons name="file-download" size={24} color={Colors.text} />
+                <MaterialIcons
+                  name="file-download"
+                  size={24}
+                  color={Colors.text}
+                />
               </TouchableOpacity>
               <TouchableOpacity
                 accessible
                 accessibilityRole="button"
                 accessibilityLabel="Eliminar menú"
-                accessibilityHint={"Toca para abrir la opcion para eliminar el menú" + item.nombre}
+                accessibilityHint={
+                  "Toca para abrir la opcion para eliminar el menú" +
+                  item.nombre
+                }
                 onPress={() => abrirModal(item)}
               >
                 <MaterialIcons name="delete" size={24} color={Colors.cta} />
               </TouchableOpacity>
             </View>
-
           </View>
         )}
       />
@@ -148,7 +162,10 @@ export default function MenusScreen() {
       <CustomModal
         visible={modalVisible}
         nombre={"el menú " + menuBorrar?.nombre}
-        onCancel={() => { setModalVisible(false); setMenuBorrar(null) }}
+        onCancel={() => {
+          setModalVisible(false);
+          setMenuBorrar(null);
+        }}
         onAccept={() => handleEliminarMenu()}
       />
     </View>
