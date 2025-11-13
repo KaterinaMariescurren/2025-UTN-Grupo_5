@@ -13,8 +13,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -86,68 +84,63 @@ export default function RegisterPersonaScreen() {
       accessible
       accessibilityLabel="Pantalla de registro de cliente"
     >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
-        keyboardShouldPersistTaps="handled"
+      <View
+        accessible
+        accessibilityRole="header"
+        accessibilityLabel="Completa los siguientes campos para registrarte como cliente."
       >
-        <View
-          accessible
-          accessibilityRole="header"
-          accessibilityLabel="Completa los siguientes campos para registrarte como cliente."
-        >
-          <Text style={GlobalStyles.tittle}>Completa los siguientes {"\n"}campos para poder {"\n"}registrarte como cliente{" "}</Text>
-        </View>
-        <View
-          style={GlobalStyles.containerInputs}
-          accessible
-          accessibilityLabel="Formulario de registro de cliente. Contiene tres campos: nombre, email y contraseña."
-        >
-          <CustomInput
-            label="Nombre"
-            value={nombre}
-            onChangeText={(text) => setNombre(text)}
-            placeholder="Nombre"
-            keyboardType="default"
-            accessibilityHint="Ingresa tu nombre"
-          />
-          <CustomInput
-            label="Email"
-            value={email}
-            onChangeText={(email) => setEmail(email)}
-            placeholder="Email"
-            keyboardType="email-address"
-            accessibilityHint="Ingresa tu email"
-          />
-          <CustomInput
-            label="Contraseña"
-            value={contrasenia}
-            onChangeText={setContrasenia}
-            placeholder="Contraseña"
-            keyboardType="default"
-            secureTextEntry={!showPassword}
-            accessibilityHint="Ingresa la contraseña"
-            rightIconName={showPassword ? "visibility" : "visibility-off"}
-            rightIconAccessibilityLabel={
-              showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
-            }
-            rightIconAccessibilityHint="Toca para alternar la visibilidad de la contraseña"
-            onRightIconPress={() => setShowPassword(!showPassword)}
-          />
-        </View>
-        <View style={GlobalStyles.containerButton}
-          accessible
-          accessibilityRole="button"
-          accessibilityLabel="Botón para registrarte como cliente"
-          accessibilityHint="Toca para enviar el formulario de registro"
-        >
-          <CustomButton
-            label="Registrarse"
-            onPress={handleRegister}
-            type="primary"
-            accessibilityHint="Registrarse como cliente"
-          />
-        </View>
-      </ScrollView>
+        <Text style={GlobalStyles.tittle}>Completa los siguientes {"\n"}campos para poder {"\n"}registrarte como cliente{" "}</Text>
+      </View>
+      <View
+        style={GlobalStyles.containerInputs}
+        accessible
+        accessibilityLabel="Formulario de registro de cliente. Contiene tres campos: nombre, email y contraseña."
+      >
+        <CustomInput
+          label="Nombre"
+          value={nombre}
+          onChangeText={(text) => setNombre(text)}
+          placeholder="Nombre"
+          keyboardType="default"
+          accessibilityHint="Ingresa tu nombre"
+        />
+        <CustomInput
+          label="Email"
+          value={email}
+          onChangeText={(email) => setEmail(email)}
+          placeholder="Email"
+          keyboardType="email-address"
+          accessibilityHint="Ingresa tu email"
+        />
+        <CustomInput
+          label="Contraseña"
+          value={contrasenia}
+          onChangeText={setContrasenia}
+          placeholder="Contraseña"
+          keyboardType="default"
+          secureTextEntry={!showPassword}
+          accessibilityHint="Ingresa la contraseña"
+          rightIconName={showPassword ? "visibility" : "visibility-off"}
+          rightIconAccessibilityLabel={
+            showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+          }
+          rightIconAccessibilityHint="Toca para alternar la visibilidad de la contraseña"
+          onRightIconPress={() => setShowPassword(!showPassword)}
+        />
+      </View>
+      <View style={GlobalStyles.containerButton}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel="Botón para registrarte como cliente"
+        accessibilityHint="Toca para enviar el formulario de registro"
+      >
+        <CustomButton
+          label="Registrarse"
+          onPress={handleRegister}
+          type="primary"
+          accessibilityHint="Registrarse como cliente"
+        />
+      </View>
     </KeyboardAvoidingView>
   );
 }

@@ -6,7 +6,8 @@ interface ButtonProps {
     label: string;
     onPress: () => void;
     type?: "primary" | "secondary" | "delete";
-    accessibilityHint?: string; // 👈 opcional, por si querés personalizarlo
+    accessibilityHint?: string;
+    ref?: any
 }
 
 export default function CustomButton({
@@ -14,11 +15,13 @@ export default function CustomButton({
     onPress,
     type = "primary",
     accessibilityHint,
+    ref
 }: ButtonProps) {
     const backgroundColor = type === "primary" ? Colors.primary : type === "secondary" ? Colors.secondary : "#F28B82";
 
     return (
         <TouchableOpacity
+            ref={ref}
             style={[styles.button, { backgroundColor }]}
             onPress={onPress}
             activeOpacity={0.8}

@@ -65,12 +65,19 @@ export default function NuevoPlatoScreen() {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={GlobalStyles.container}
+      accessibilityLabel="Pantalla de creacion de un nuevo plato"
     >
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={GlobalStyles.tittle}>Nuevo Plato</Text>
+        <Text
+          style={GlobalStyles.tittle}
+          accessibilityElementsHidden={true}
+          importantForAccessibility="no"
+        >
+          Nuevo Plato
+        </Text>
         <View style={GlobalStyles.containerInputs}>
           <CustomInput
             label="Nombre del plato"
@@ -86,6 +93,8 @@ export default function NuevoPlatoScreen() {
             onChangeText={setDescripcion}
             placeholder="Ingrese la descripción"
             keyboardType="default"
+            multiline
+            minHeight={80}
             accessibilityHint="Ingresa la descripción del plato"
           />
           <CustomInput

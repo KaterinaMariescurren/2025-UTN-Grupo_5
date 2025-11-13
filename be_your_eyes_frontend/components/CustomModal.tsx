@@ -6,13 +6,13 @@ import {
     View,
     Text,
     StyleSheet,
-    TouchableOpacity,
 } from "react-native";
 import CustomButton from "./CustomButton";
 
 interface ConfirmModalProps {
     visible: boolean;
     nombre: string;
+    descripcion?: string; 
     onAccept: () => void;
     onCancel: () => void;
 }
@@ -39,13 +39,13 @@ export default function CustomModal({
                             label="Aceptar"
                             onPress={onAccept}
                             type="primary"
-                            accessibilityHint={"Eliminar" + {nombre}}
+                            accessibilityHint={"Eliminar" + { nombre }}
                         />
                         <CustomButton
                             label="Cancelar"
                             onPress={onCancel}
                             type="secondary"
-                            accessibilityHint={"Cancelar la eliminacion de " + {nombre}}
+                            accessibilityHint={"Cancelar la eliminacion de " + { nombre }}
                         />
                     </View>
                 </View>
@@ -67,5 +67,5 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         paddingVertical: 44,
     },
-    
+
 });

@@ -7,9 +7,12 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  FlatList,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useApi } from "@/utils/api";
+import { GlobalStyles } from "@/constants/GlobalStyles";
+import CardButton from "@/components/CardButton";
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -53,36 +56,67 @@ export default function MenuDetalle() {
       </View>
     );
   }
-  return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.menuTitle}>Menú {menu.nombre}</Text>
-        <Text style={styles.menuSubTitle}>Haga click para mas información</Text>
+
+  // 🔹 Si no hay categorías
+  if (categorias.length === 0) {
+    return (
+      <View
+        style={[GlobalStyles.container, styles.noDataContainer]}
+        accessible
+        accessibilityRole="alert"
+        accessibilityLabel={`El menú ${menu.nombre} no tiene categorías disponibles`}
+      >
+        <Text style={styles.noDataText}>
+          No hay categorías disponibles para este menú.
+        </Text>
       </View>
-      {categorias.map((categoria) => (
-        <TouchableOpacity
-          key={categoria.id}
-          style={styles.categoriaContainer}
-          onPress={() =>
-            router.push({
-              pathname: `/menu/categoria/${categoria.id}`,
+    );
+  }
+
+  return (
+    <View
+      style={GlobalStyles.container}
+      accessible
+      accessibilityLabel={`Pantalla de categorias del menú ${menu.nombre}`}
+      accessibilityHint="Desliza o explora para ver las categorías del menú."
+    >
+      <Text
+        style={GlobalStyles.tittle}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        Menú {menu.nombre}
+      </Text>
+      <Text
+        style={GlobalStyles.subtitle}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        Haga click para mas información
+      </Text>
+      <FlatList
+        data={categorias}
+        showsVerticalScrollIndicator={false}
+        accessibilityRole="list"
+        accessibilityLabel={`Lista de Menús de ${menu.nombre}`}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <CardButton
+            name={item.nombre}
+            onPress={() => router.push({
+              pathname: `/menu/categoria/${item.id}`,
               params: { menu_id: id },
-            })
-          }
-        >
-          <Text style={styles.categoriaTitle}>{categoria.nombre}</Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+            })}
+            accessibilityHintText={`Toca para ver los platos de la categoría ${item.nombre}`}
+            width={"100%"}
+          />
+        )}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#FFFFFF",
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
@@ -99,41 +133,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "red",
   },
-  menuTitle: {
-    fontSize: 27,
-    fontWeight: 700,
-    marginBottom: 16,
-    textAlign: "center",
-    marginTop: 20,
-    color: "#273431",
-  },
-  menuSubTitle: {
-    marginBottom: 12,
-    fontWeight: 500,
-    textAlign: "center",
-    fontSize: 16,
-    color: "#242424",
-  },
-  categoriaContainer: {
-    backgroundColor: "#DCF0F0",
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  categoriaTitle: {
-    fontSize: 20,
-    fontWeight: 700,
-    textAlign: "center",
-    color: "#242424",
-  },
-  header: {
-    marginVertical: 45,
-  },
+  noDataContainer: { padding: 30, alignItems: 'center' },
+  noDataText: { fontSize: 16, color: '#888', textAlign: 'center' },
 });

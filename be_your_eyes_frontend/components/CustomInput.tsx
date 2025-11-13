@@ -1,5 +1,5 @@
 import { Colors } from "@/constants/Colors";
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, TextInput, View, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -13,8 +13,10 @@ interface CustomInputProps {
     accessibilityHint?: string;
     rightIconName?: keyof typeof MaterialIcons.glyphMap;
     onRightIconPress?: () => void;
-    rightIconAccessibilityLabel?: string; // Etiqueta para el lector de pantalla del icono
-    rightIconAccessibilityHint?: string;  // Hint para el lector de pantalla del icono
+    rightIconAccessibilityLabel?: string;
+    rightIconAccessibilityHint?: string;
+    multiline?: boolean;
+    minHeight?: number;
 }
 
 export default function CustomInput({
@@ -29,17 +31,33 @@ export default function CustomInput({
     onRightIconPress,
     rightIconAccessibilityLabel,
     rightIconAccessibilityHint,
+    multiline = false,
+    minHeight = 50,
 }: CustomInputProps) {
+    const [inputHeight, setInputHeight] = useState(minHeight);
+
     return (
         <View style={styles.container}>
             <View style={styles.inputWrapper}>
                 <TextInput
-                    style={[styles.input, rightIconName ? { paddingRight: 40 } : {}]}
+                    style={[
+                        styles.input,
+                        { height: inputHeight, textAlignVertical: "center" },
+                        rightIconName ? { paddingRight: 40 } : {},
+                    ]}
                     value={value}
                     onChangeText={onChangeText}
                     placeholder={placeholder}
                     keyboardType={keyboardType}
                     secureTextEntry={secureTextEntry}
+                    onContentSizeChange={
+                        multiline
+                            ? (e) =>
+                                setInputHeight(
+                                    Math.max(minHeight, e.nativeEvent.contentSize.height)
+                                )
+                            : undefined
+                    }
                     accessible
                     accessibilityLabel={label}
                     accessibilityHint={
@@ -56,7 +74,8 @@ export default function CustomInput({
                             rightIconAccessibilityLabel || `Acción del icono de ${label}`
                         }
                         accessibilityHint={
-                            rightIconAccessibilityHint || `Toca para realizar la acción de ${label}`
+                            rightIconAccessibilityHint ||
+                            `Toca para realizar la acción de ${label}`
                         }
                     >
                         <MaterialIcons name={rightIconName} size={24} color="#000000" />
@@ -78,7 +97,7 @@ const styles = StyleSheet.create({
     },
     input: {
         borderRadius: 8,
-        paddingVertical: 16,
+        paddingVertical: 12,
         paddingHorizontal: 16,
         fontSize: 16,
         color: Colors.text,

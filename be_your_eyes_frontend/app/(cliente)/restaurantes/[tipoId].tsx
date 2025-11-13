@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, TextInput } from "react-native";
+import { View, Text, StyleSheet, FlatList, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Feather } from '@expo/vector-icons';
 import { GlobalStyles } from "@/constants/GlobalStyles";
 import Buscardor from "@/components/Buscador";
-import CardLocal from "@/components/CardLocal";
 import CardButton from "@/components/CardButton";
 import { useApi } from "@/utils/api";
 
@@ -35,7 +33,7 @@ export default function RestaurantesPorTipo() {
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const {apiFetch} = useApi();
+    const { apiFetch } = useApi();
 
     useEffect(() => {
         if (!tipoId) return;
@@ -49,7 +47,7 @@ export default function RestaurantesPorTipo() {
                 console.error("Error al cargar el nombre del tipo:", err);
                 setNombreTipo("Tipo Desconocido");
             });
-            
+
         apiFetch(`${BACKEND_URL}locales/buscar/?tipo_local_id=${tipoId}`)
             .then(res => res.json())
             .then(data => {
@@ -77,8 +75,28 @@ export default function RestaurantesPorTipo() {
 
         if (locales.length === 0) {
             return (
-                <View style={styles.noDataContainer}>
+                <View
+                    style={styles.noDataContainer}
+                    accessible
+                    accessibilityRole="alert"
+                    accessibilityLabel={`No hay locales disponibles para el tipo ${nombreTipo}`}
+                >
                     <Text style={styles.noDataText}> No hay locales disponibles para este tipo.</Text>
+                </View>
+            );
+        }
+
+        if (filteredLocales.length === 0) {
+            return (
+                <View
+                    style={styles.noDataContainer}
+                    accessible
+                    accessibilityRole="alert"
+                    accessibilityLabel="No se encontraron restaurantes que coincidan con la búsqueda"
+                >
+                    <Text style={styles.noDataText}>
+                        No se encontraron restaurantes que coincidan con la búsqueda.
+                    </Text>
                 </View>
             );
         }
@@ -86,6 +104,9 @@ export default function RestaurantesPorTipo() {
         return (
             <FlatList
                 data={filteredLocales}
+                showsVerticalScrollIndicator={false}
+                accessibilityRole="list"
+                accessibilityLabel="Lista de todos los restaurantes disponibles"
                 keyExtractor={item => item.id.toString()}
                 renderItem={({ item }) => (
                     <CardButton
@@ -93,7 +114,7 @@ export default function RestaurantesPorTipo() {
                         address={`${item.direccion.calle} ${item.direccion.altura}`}
                         tieneMenuAccesible={item.tiene_menu_accesible}
                         onPress={() => router.push(`/local/${item.id}`)}
-                        accessibilityHintText=""
+                        accessibilityHintText={"Toca para ver la información detallada del restaurante" + item.nombre}
                         width={"100%"}
                     />
                 )}
@@ -102,16 +123,33 @@ export default function RestaurantesPorTipo() {
     };
 
     return (
-        <View style={GlobalStyles.container}>
+        <View
+            style={GlobalStyles.container}
+            accessible
+            accessibilityLabel={`Pantalla de restaurantes del tipo ${nombreTipo}`}
+            accessibilityHint="Desliza o usa el rotor para explorar los restaurantes disponibles"
+        >
 
-            <Text style={GlobalStyles.tittleCliente}>{nombreTipo}</Text>
-            <Text style={GlobalStyles.subtitle}>Haga clic para más información</Text>
+            <Text
+                style={GlobalStyles.tittleMarginVertical}
+                accessibilityElementsHidden={true}
+                importantForAccessibility="no"
+            >
+                {nombreTipo}
+            </Text>
+            <Text
+                style={GlobalStyles.subtitle}
+                accessibilityElementsHidden={true}
+                importantForAccessibility="no"
+            >
+                Haga clic para más información
+            </Text>
 
             <Buscardor
                 value={searchTerm}
                 onChangeText={setSearchTerm}
-                placeholder="Buscar restaurantes..."
-                accessibilityLabel="Buscar restaurantes"
+                placeholder={"Buscar tipos de " + nombreTipo + "..."}
+                accessibilityLabel={"Buscar tipos de " + nombreTipo}
             />
 
             {renderContent()}

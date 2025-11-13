@@ -48,8 +48,15 @@ export default function NuevoMenuScreen() {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={GlobalStyles.container}
+      accessibilityLabel="Pantalla de creacion de un nuevo Menú"
     >
-      <Text style={GlobalStyles.tittle}>Nuevo Menú</Text>
+      <Text
+        style={GlobalStyles.tittle}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        Nuevo Menú
+      </Text>
 
       <CustomInput
         label="Nombre del menú"

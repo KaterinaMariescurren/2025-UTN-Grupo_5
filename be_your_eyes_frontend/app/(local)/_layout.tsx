@@ -7,7 +7,9 @@ import { Colors } from '@/constants/Colors';
 
 const ProfileButton = ({ router }) => (
   <TouchableOpacity
-    onPress={() => router.push('/profile')}
+    onPress={() => {
+      router.replace("/perfil");
+    }}
     style={styles.iconButton}
     accessible
     accessibilityRole="button"
@@ -41,52 +43,28 @@ export default function LocalLayout() {
     }
   }, [accessToken, router]);
 
-  const commonOptions = {
+  const getScreenOptions = (screenName: string) => ({
     headerTitle: '',
     headerRight: () => <ProfileButton router={router} />,
-    headerLeft: () => <BackButton router={router} />,
+    // Solo mostrar back si NO es index
+    headerLeft: screenName === 'index' ? undefined : () => <BackButton router={router} />,
     headerStyle: {
       backgroundColor: Colors.background,
       shadowColor: 'transparent',
     },
     headerShadowVisible: false,
-  };
+  });
 
   return (
     <Stack>
-      <Stack.Screen
-        name="index"
-        options={commonOptions}
-      />
-      <Stack.Screen
-        name="nuevoMenu"
-        options={commonOptions}
-      />
-      <Stack.Screen
-        name="categorias"
-        options={commonOptions}
-      />
-      <Stack.Screen
-        name="nuevaCategoria"
-        options={commonOptions}
-      />
-      <Stack.Screen
-        name="platos"
-        options={commonOptions}
-      />
-      <Stack.Screen
-        name="nuevoPlato"
-        options={commonOptions}
-      />
-      <Stack.Screen
-        name="editarPlato"
-        options={commonOptions}
-      />
-      <Stack.Screen
-        name="puntosImpresion"
-        options={commonOptions}
-      />
-      {/* Agrega aquí más pantallas del layout del local si las tienes */}
+      <Stack.Screen name="index" options={getScreenOptions('index')} />
+      <Stack.Screen name="nuevoMenu" options={getScreenOptions('nuevoMenu')} />
+      <Stack.Screen name="categorias" options={getScreenOptions('categorias')} />
+      <Stack.Screen name="nuevaCategoria" options={getScreenOptions('nuevaCategoria')} />
+      <Stack.Screen name="platos" options={getScreenOptions('platos')} />
+      <Stack.Screen name="nuevoPlato" options={getScreenOptions('nuevoPlato')} />
+      <Stack.Screen name="editarPlato" options={getScreenOptions('editarPlato')} />
+      <Stack.Screen name="puntosImpresion" options={getScreenOptions('puntosImpresion')} />
     </Stack>
   );
 }

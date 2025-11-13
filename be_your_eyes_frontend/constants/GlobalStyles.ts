@@ -7,24 +7,25 @@ export const GlobalStyles = StyleSheet.create({
     padding: 20,
     backgroundColor: Colors.background,
     paddingBottom: 150,
-    paddingTop: 45
+    paddingTop: 30
   },
   tittle: {
     fontSize: 27,
     color: Colors.text,
     fontWeight: "700",
-    marginBottom: 32,
+    marginBottom: 15,
     textAlign: "center",
   },
-  tittleCliente: {
+  tittleMarginVertical: {
     fontSize: 27,
     color: Colors.text,
     fontWeight: "700",
     textAlign: "center",
+    marginVertical: 15
   },
   containerButton: {
     paddingHorizontal: 31,
-    marginTop: 45
+    marginTop: 25
   },
   containerInputs: {
     gap: 16,
@@ -37,5 +38,4 @@ export const GlobalStyles = StyleSheet.create({
     textAlign: 'center', 
     marginBottom: 20
   },
-
 });
