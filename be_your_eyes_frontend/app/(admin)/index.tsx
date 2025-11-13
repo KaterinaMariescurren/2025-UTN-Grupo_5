@@ -11,6 +11,7 @@ import {
 import { useApi } from "@/utils/api";
 import { Feather } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
+import { useRouter } from "expo-router";
 
 interface Direccion {
   id: number;
@@ -30,6 +31,7 @@ export default function LocalListScreen() {
   const [locales, setLocales] = useState<Local[]>([]);
   const [loading, setLoading] = useState(true);
   const { apiFetch } = useApi();
+  const router = useRouter();
 
   const fetchLocales = async () => {
     try {
@@ -131,7 +133,16 @@ export default function LocalListScreen() {
       >
         Locales registrados
       </Text>
-
+      <TouchableOpacity
+      style={styles.addButton}
+      onPress={() => router.push("/(admin)/gestionarPuntosImpresion" as any)}
+      accessible
+      accessibilityLabel="Gestionar puntos de impresión en braille"
+      accessibilityHint="Abre la pantalla para crear, editar y eliminar puntos de impresión"
+    >
+      <Feather name="map-pin" size={20} color="#fff" />
+      <Text style={styles.addButtonText}>Gestionar Puntos de Impresión</Text>
+    </TouchableOpacity>
       <FlatList
         data={locales}
         keyExtractor={(item) => item.id.toString()}
@@ -234,4 +245,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: Colors.background },
+
+  addButton: {
+  backgroundColor: "#50C2C9",
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 16,
+  borderRadius: 12,
+  marginBottom: 20,
+  gap: 8,
+},
+addButtonText: {
+  color: "#fff",
+  fontSize: 16,
+  fontWeight: "600",
+},
 });
