@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, TextInput } from "react-native";
-import { useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
+import { View, Text, StyleSheet, FlatList, ActivityIndicator } from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
 import Buscardor from "@/components/Buscador";
 import { GlobalStyles } from "@/constants/GlobalStyles";
 import { LocalItem } from "./[tipoId]";
 import CardButton from "@/components/CardButton";
-import { Feather } from '@expo/vector-icons';
 import { useApi } from "@/utils/api";
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -17,7 +16,8 @@ export default function TodosLosRestaurantes() {
   const router = useRouter();
   const { apiFetch } = useApi();
 
-  useEffect(() => {
+  useFocusEffect(
+  useCallback(() => {
     setLoading(true);
 
     apiFetch(`${BACKEND_URL}locales/`)
@@ -30,7 +30,7 @@ export default function TodosLosRestaurantes() {
         console.error("Error al cargar todos los locales:", err);
         setLoading(false);
       });
-  }, []);
+  }, [apiFetch]));
 
   const filteredLocales = locales.filter(item =>
     item.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||

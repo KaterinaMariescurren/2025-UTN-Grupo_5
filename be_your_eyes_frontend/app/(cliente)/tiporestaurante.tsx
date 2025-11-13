@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, FlatList, StyleSheet, Platform, ScrollView, KeyboardAvoidingView, TouchableOpacity, findNodeHandle, AccessibilityInfo } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, findNodeHandle, AccessibilityInfo } from "react-native";
 import { useRouter } from "expo-router";
-import { Colors } from "@/constants/Colors";
 import CardButton from "@/components/CardButton";
 import { GlobalStyles } from "@/constants/GlobalStyles";
 import CustomButton from "@/components/CustomButton";

@@ -3,8 +3,6 @@ import CustomInput from "@/components/CustomInput";
 import { Colors } from "@/constants/Colors";
 import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useAuth } from "@/contexts/authContext";
-import { useApi } from "@/utils/api";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -28,8 +26,8 @@ export default function LoginScreen() {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        router.replace("/");  
-        return true; 
+        router.replace("/");
+        return true;
       };
 
       const subscription = BackHandler.addEventListener(
@@ -57,10 +55,18 @@ export default function LoginScreen() {
           const data = await response.json();
 
           // Redirige según tipo
-          if (data.tipo === "local") {
-            router.replace("/(local)");
-          } else {
-            router.replace("/(cliente)/tiporestaurante");
+          switch (data.tipo) {
+            case "persona":
+              router.replace("/(cliente)/tiporestaurante");
+              break;
+            case "local":
+              router.replace("/(local)");
+              break;
+            case "admin":
+              router.replace("/(admin)");
+              break;
+            default:
+              break;
           }
         } catch (error) {
           console.error("Error verificando token:", error);
@@ -92,13 +98,20 @@ export default function LoginScreen() {
       }
       const data = await response.json();
       await login(data.access_token);
-      if (data.tipo === "persona") {
-        await login(data.access_token);
-        router.replace("/(cliente)/tiporestaurante");
-        return;
+      console.log(data);
+      switch (data.tipo) {
+        case "persona":
+          router.replace("/(cliente)/tiporestaurante");
+          break;
+        case "local":
+          router.replace("/(local)");
+          break;
+        case "admin":
+          router.replace("/(admin)");
+          break;
+        default:
+          break;
       }
-
-      router.replace("/(local)"); // navega a home o la pantalla principal
     } catch (error: any) {
       Alert.alert("Error", error.message || "Error al iniciar sesión");
     } finally {
@@ -107,8 +120,11 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={GlobalStyles.container} accessible accessibilityLabel="Pantalla de Iniciar sesión">
-
+    <View
+      style={GlobalStyles.container}
+      accessible
+      accessibilityLabel="Pantalla de Iniciar sesión"
+    >
       <View style={styles.titleContainer} accessible accessibilityRole="header">
         <Text style={styles.titleBig}>Hola,</Text>
         <Text style={styles.titleSmall}>Vamos a iniciar sesión</Text>
@@ -183,7 +199,7 @@ const styles = StyleSheet.create({
   },
   registerContainer: {
     flexDirection: "row",
-    justifyContent:"center",
+    justifyContent: "center",
     marginTop: 24,
   },
   registerText: {

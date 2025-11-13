@@ -4,8 +4,7 @@ import CustomModal from "@/components/CustomModal";
 import { Colors } from "@/constants/Colors";
 import { GlobalStyles } from "@/constants/GlobalStyles";
 import MaterialIcons from "@expo/vector-icons/build/MaterialIcons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { useApi } from "@/utils/api"
 import {
   AccessibilityInfo,
@@ -16,6 +15,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 
 type Categoria = {
   id: number;
@@ -23,31 +23,41 @@ type Categoria = {
 };
 
 export default function CategoriasScreen() {
-  const { menuId, menuName } = useLocalSearchParams<{ menuId: string, menuName: string }>();
+  const { menuId, menuName } = useLocalSearchParams<{
+    menuId: string;
+    menuName: string;
+  }>();
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [categoriaBorrar, setCategoriaBorrar] = useState<Categoria | null>(null);
+  const [categoriaBorrar, setCategoriaBorrar] = useState<Categoria | null>(
+    null
+  );
   const { apiFetch } = useApi();
   const router = useRouter();
 
   const botonesRef = useRef(null);
 
-  useEffect(() => {
-    if (!menuId) return;
-    const fetchCategorias = async () => {
-      const res = await apiFetch(`${process.env.EXPO_PUBLIC_API_URL}menus/${menuId}/categorias`);
 
-      const data = await res.json();
+  useFocusEffect(
+    useCallback(() => {
+      if (!menuId) return;
 
-      setCategorias(data);
-    };
-    fetchCategorias();
-  }, [menuId]);
+      const fetchCategorias = async () => {
+        const res = await apiFetch(
+          `${process.env.EXPO_PUBLIC_API_URL}menus/${menuId}/categorias`
+        );
+        const data = await res.json();
+        setCategorias(data);
+      };
+
+      fetchCategorias();
+    }, [apiFetch, menuId])
+  );
 
   const abrirModal = (categoria: Categoria) => {
     setCategoriaBorrar(categoria);
     setModalVisible(true);
-  }
+  };
 
   const handleEliminarCategoria = async () => {
     try {
@@ -60,6 +70,7 @@ export default function CategoriasScreen() {
       // Actualizar la lista local
       setCategorias(categorias.filter((c) => c.id !== categoriaBorrar?.id));
       setModalVisible(false);
+      setCategoriaBorrar(null);
     } catch (error) {
       console.error("Error al eliminar categoría:", error);
       Alert.alert("Error", "No se pudo eliminar la categoría");
@@ -124,7 +135,10 @@ export default function CategoriasScreen() {
               accessible
               accessibilityRole="button"
               accessibilityLabel="Eliminar categoría"
-              accessibilityHint={"Toca para abrir la opcion para eliminar la categoría" + item.nombre}
+              accessibilityHint={
+                "Toca para abrir la opcion para eliminar la categoría" +
+                item.nombre
+              }
             >
               <MaterialIcons name="delete" size={24} color={Colors.cta} />
             </TouchableOpacity>
@@ -134,7 +148,9 @@ export default function CategoriasScreen() {
       <View style={GlobalStyles.containerButton}>
         <CustomButton
           label="Nueva Categoría"
-          onPress={() => router.push(`/(local)/nuevaCategoria?menuId=${menuId}`)}
+          onPress={() =>
+            router.push(`/(local)/nuevaCategoria?menuId=${menuId}`)
+          }
           type="primary"
           accessibilityHint="Abre la pantalla para crear una nueva categoría"
           ref={botonesRef}
@@ -143,7 +159,10 @@ export default function CategoriasScreen() {
       <CustomModal
         visible={modalVisible}
         nombre={"la categoría " + categoriaBorrar?.nombre}
-        onCancel={() => { setModalVisible(false); setCategoriaBorrar(null) }}
+        onCancel={() => {
+          setModalVisible(false);
+          setCategoriaBorrar(null);
+        }}
         onAccept={() => handleEliminarCategoria()}
       />
     </View>

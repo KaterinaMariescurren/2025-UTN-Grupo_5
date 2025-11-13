@@ -13,6 +13,7 @@ class LocalBase(BaseModel):
     tipo_local_id: int
     tiene_menu_accesible: bool = False
     tiene_qr: bool = False
+    habilitado: bool = False
 
 class LocalCrear(LocalBase):
     pass

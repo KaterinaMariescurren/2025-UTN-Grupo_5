@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/authContext";
 import { useApi } from "@/utils/api";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 
 export default function EditarPlatoScreen() {
   const { accessToken } = useAuth();
@@ -45,7 +45,7 @@ export default function EditarPlatoScreen() {
     };
 
     fetchPlato();
-  }, [platoId, accessToken]);
+  }, [platoId, accessToken, apiFetch]);
 
   const handleEditarPlato = async () => {
     if (!nombre.trim() || !precio.trim()) {

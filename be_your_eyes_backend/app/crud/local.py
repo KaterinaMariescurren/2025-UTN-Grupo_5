@@ -54,8 +54,13 @@ def registrar_local(db: Session, usuario_data, local_data):
 def obtener_local(db: Session, local_id: int):
     return db.query(Local).filter(Local.id == local_id).first()
 
-def listar_locales(db: Session):
-    return db.query(Local).all()
+def listar_locales(db: Session, usuario: dict):
+    query = db.query(Local)
+
+    if usuario.get("tipo") != "admin":
+        query = query.filter(Local.habilitado == True)
+
+    return query.all()
 
 def actualizar_local(db: Session, local_id: int, local_data: LocalActualizar):
     db_local = db.query(Local).filter(Local.id == local_id).first()
@@ -75,8 +80,10 @@ def eliminar_local(db: Session, local_id: int):
         db.commit()
     return db_local
 
-def buscar_locales(db: Session, nombre: str = None, tipo_local_id: int = None, direccion_id: int = None):
+def buscar_locales(db: Session, usuario: dict, nombre: str = None, tipo_local_id: int = None, direccion_id: int = None):
     query = db.query(Local)
+    if usuario.get("tipo") != "admin":
+        query = query.filter(Local.habilitado == True)
     if nombre:
         query = query.filter(Local.nombre.ilike(f"%{nombre}%"))
     if tipo_local_id:
@@ -85,6 +92,34 @@ def buscar_locales(db: Session, nombre: str = None, tipo_local_id: int = None, d
         query = query.filter(Local.direccion_id == direccion_id)
     return query.all()
 
-def listar_locales_con_menus(db: Session):
+def listar_locales_con_menus(db: Session, usuario: dict):
     """Retorna lista de Local que tienen al menos un Menu asociado."""
-    return db.query(Local).join(Menu).group_by(Local.id).all()
+    query = db.query(Local).join(Menu).group_by(Local.id)
+
+    if usuario.get("tipo") != "admin":
+        query = query.filter(Local.habilitado == True)
+
+    return query.all()
+
+def habilitar_local(db: Session, id: int):
+    query = db.query(Local).filter(Local.id == id).first()
+    if not query:
+        return None
+
+    query.habilitado = True
+    db.commit()
+    db.refresh(query)
+    return(query)
+
+def deshabilitar_local(db: Session, id: int):
+    local = db.query(Local).filter(Local.id == id).first()
+    
+    if not local:
+        return None
+    
+    local.habilitado = False
+    db.commit()
+    db.refresh(local)
+    
+    return local
+

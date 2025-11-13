@@ -6,8 +6,8 @@ import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useAuth } from "@/contexts/authContext";
 import MaterialIcons from "@expo/vector-icons/build/MaterialIcons";
 import { useApi } from "@/utils/api";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useState, useRef} from "react";
 import {
   AccessibilityInfo,
   Alert,
@@ -40,7 +40,8 @@ export default function PlatosScreen() {
 
   const botonesRef = useRef(null);
 
-  useEffect(() => {
+  useFocusEffect(
+      useCallback(() => {
     const fetchPlatos = async () => {
       if (!menuId || !categoriaId) return;
 
@@ -63,7 +64,8 @@ export default function PlatosScreen() {
     };
 
     fetchPlatos();
-  }, [accessToken, menuId, categoriaId]);
+  }, [menuId, categoriaId, apiFetch])
+);
 
   const abrirModal = (plato: Plato) => {
     setPlatoBorrar(plato);
@@ -78,6 +80,7 @@ export default function PlatosScreen() {
       });
       setPlatos(platos.filter((p) => p.id !== platoBorrar?.id));
       setModalVisible(false);
+      setPlatoBorrar(null);
     } catch (error) {
       console.error("Error al eliminar plato:", error);
       Alert.alert("Error", "No se pudo eliminar el plato");
