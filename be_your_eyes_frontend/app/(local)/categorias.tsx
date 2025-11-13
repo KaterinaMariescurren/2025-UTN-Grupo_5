@@ -5,7 +5,7 @@ import { Colors } from "@/constants/Colors";
 import { GlobalStyles } from "@/constants/GlobalStyles";
 import MaterialIcons from "@expo/vector-icons/build/MaterialIcons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useApi } from "@/utils/api";
 import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
 

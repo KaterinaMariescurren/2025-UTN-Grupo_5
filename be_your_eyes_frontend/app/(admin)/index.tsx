@@ -233,5 +233,5 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
   },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: Colors.background },
 });

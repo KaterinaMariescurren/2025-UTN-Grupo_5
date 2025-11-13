@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/authContext";
 import MaterialIcons from "@expo/vector-icons/build/MaterialIcons";
 import { useApi } from "@/utils/api";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Alert,
   FlatList,

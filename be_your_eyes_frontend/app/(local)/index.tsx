@@ -4,7 +4,7 @@ import CustomModal from "@/components/CustomModal";
 import { Colors } from "@/constants/Colors";
 import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useAuth } from "@/contexts/authContext";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useApi } from "@/utils/api";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
@@ -61,7 +61,7 @@ export default function MenusScreen() {
       };
 
       fetchData();
-    }, [accessToken])
+    }, [accessToken, apiFetch, router])
   );
 
   const abrirModal = (menu: Menu) => {
