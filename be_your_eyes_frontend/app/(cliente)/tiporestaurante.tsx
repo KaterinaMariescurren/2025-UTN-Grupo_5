@@ -5,7 +5,6 @@ import {
   FlatList,
   StyleSheet,
   Platform,
-  ScrollView,
   KeyboardAvoidingView,
 } from "react-native";
 import { useRouter } from "expo-router";

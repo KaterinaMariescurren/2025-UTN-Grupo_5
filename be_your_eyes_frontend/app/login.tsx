@@ -3,8 +3,6 @@ import CustomInput from "@/components/CustomInput";
 import { Colors } from "@/constants/Colors";
 import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useAuth } from "@/contexts/authContext";
-import { useApi } from "@/utils/api";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
