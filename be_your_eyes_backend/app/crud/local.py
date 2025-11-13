@@ -88,3 +88,26 @@ def buscar_locales(db: Session, nombre: str = None, tipo_local_id: int = None, d
 def listar_locales_con_menus(db: Session):
     """Retorna lista de Local que tienen al menos un Menu asociado."""
     return db.query(Local).join(Menu).group_by(Local.id).all()
+
+def habilitar_local(db: Session, id: int):
+    query = db.query(Local).filter(Local.id == id).first()
+    if not query:
+        return None
+
+    query.habilitado = True
+    db.commit()
+    db.refresh(query)
+    return(query)
+
+def deshabilitar_local(db: Session, id: int):
+    local = db.query(Local).filter(Local.id == id).first()
+    
+    if not local:
+        return None
+    
+    local.habilitado = False
+    db.commit()
+    db.refresh(local)
+    
+    return local
+
