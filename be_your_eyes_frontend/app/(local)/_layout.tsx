@@ -5,9 +5,9 @@ import { TouchableOpacity, StyleSheet } from 'react-native';
 import { useAuth } from '@/contexts/authContext';
 import { Colors } from '@/constants/Colors';
 
-const ProfileButton = ({ router }) => (
+const ProfileButton = ({ logout }) => (
   <TouchableOpacity
-    onPress={() => router.push('/profile')}
+    onPress={() => logout()}
     style={styles.iconButton}
     accessible
     accessibilityRole="button"
@@ -33,7 +33,7 @@ const BackButton = ({ router }) => (
 
 export default function LocalLayout() {
   const router = useRouter();
-  const { accessToken } = useAuth();
+  const { accessToken, logout } = useAuth();
 
   useEffect(() => {
     if (!accessToken) {
@@ -43,7 +43,7 @@ export default function LocalLayout() {
 
   const commonOptions = {
     headerTitle: '',
-    headerRight: () => <ProfileButton router={router} />,
+    headerRight: () => <ProfileButton logout={logout} />,
     headerLeft: () => <BackButton router={router} />,
     headerStyle: {
       backgroundColor: Colors.background,

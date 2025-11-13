@@ -1,11 +1,10 @@
 import CustomButton from "@/components/CustomButton";
 import CustomInput from "@/components/CustomInput";
 import { GlobalStyles } from "@/constants/GlobalStyles";
-import { useAuth } from "@/contexts/authContext";
 import { useApi } from "@/utils/api";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Text, View } from "react-native";
 
 export default function NuevoMenuScreen() {
   const { apiFetch } = useApi();

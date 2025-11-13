@@ -1,22 +1,20 @@
 import { Colors } from '@/constants/Colors';
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, Router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { useAuth } from "@/contexts/authContext";
 import { useEffect } from "react";
 
-const ProfileButton = ({ logout }) => (
-  <TouchableOpacity
-    onPress={() => logout()}
-    style={styles.iconButton}
-  >
-    <Feather name="user" size={24} color="#000" />
+
+const BackButton = ({ router }: { router: Router }) => (
+  <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
+    <Feather name="arrow-left" size={24} color="#000" />
   </TouchableOpacity>
 );
 
-const BackButton = ({ router }) => (
-  <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
-    <Feather name="arrow-left" size={24} color="#000" />
+const LogoutButton = ({ logout }: { logout: () => void }) => (
+  <TouchableOpacity onPress={() => logout()} style={styles.iconButton}>
+    <Feather name="log-out" size={24} color="#000" />
   </TouchableOpacity>
 );
 
@@ -33,8 +31,8 @@ export default function RootLayout() {
 
   const commonOptions = {
     headerTitle: "",
-    headerRight: () => <ProfileButton logout={logout} />,
     headerLeft: () => <BackButton router={router} />,
+    headerRight: () => <LogoutButton logout={logout} />,
     headerStyle: {
       backgroundColor: Colors.background,
       shadowColor: 'transparent',
@@ -44,12 +42,7 @@ export default function RootLayout() {
 
   return (
     <Stack>
-      <Stack.Screen name="tiporestaurante" options={commonOptions} />
-      <Stack.Screen name="restaurantes/[tipoId]" options={commonOptions} />
-      <Stack.Screen name="local/[id]" options={commonOptions} />
-      <Stack.Screen name="restaurantes/all" options={commonOptions} />
-      <Stack.Screen name="menu/[id]" options={commonOptions} />
-      <Stack.Screen name="menu/categoria/[id]" options={commonOptions} />
+      <Stack.Screen name="index" options={commonOptions} />
     </Stack>
   );
 }

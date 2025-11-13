@@ -1,10 +1,52 @@
 import CustomButton from "@/components/CustomButton";
 import { Colors } from "@/constants/Colors";
 import { GlobalStyles } from "@/constants/GlobalStyles";
+import { useAuth } from "@/contexts/authContext";
 import { router } from "expo-router";
+import { useEffect } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function RegisterScreen() {
+  const { accessToken } = useAuth();
+  useEffect(() => {
+      if (accessToken) {
+        const checkTipo = async () => {
+          try {
+            const response = await fetch(
+              `${process.env.EXPO_PUBLIC_API_URL}me/tipo`,
+              {
+                headers: { Authorization: `Bearer ${accessToken}` },
+              }
+            );
+  
+            if (!response.ok) throw new Error("Token inválido");
+  
+            const data = await response.json();
+  
+            // Redirige según tipo
+            switch (data.tipo) {
+              case "persona":
+                router.replace("/(cliente)/tiporestaurante");
+                break;
+              case "local":
+                router.replace("/(local)");
+                break;
+              case "admin":
+                router.replace("/(admin)");
+                break;
+              default:
+                break;
+            }
+          } catch (error) {
+            console.error("Error verificando token:", error);
+            // Si hay un problema, no hace nada (permite ver el login)
+          }
+        };
+  
+        checkTipo();
+      }
+    }, [accessToken]);
+    
   return (
     <View style={GlobalStyles.container} accessible accessibilityLabel="Pantalla de Registro de cuenta">
 

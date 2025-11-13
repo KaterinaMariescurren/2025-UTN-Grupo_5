@@ -12,6 +12,7 @@ class Local(Base):
     usuario_id = Column(Integer, ForeignKey("usuario.id"), nullable=False, unique=True)
     tiene_menu_accesible = Column(Boolean, default=False)
     tiene_qr = Column(Boolean, default=False)
+    habilitado = Column(Boolean, default=False)
 
     usuario = relationship("Usuario", back_populates="local")
     tipo_local = relationship("TipoLocal", back_populates="locales")

@@ -6,3 +6,8 @@ from .categoria import Categoria
 from .menu_categoria import MenuCategoria
 from .plato import Plato
 from .punto_impresion import PuntoImpresion
+from .usuario import Usuario
+from .persona import Persona
+from .local import Local
+from .horario import Horario
+from .notificacion import Notificacion
