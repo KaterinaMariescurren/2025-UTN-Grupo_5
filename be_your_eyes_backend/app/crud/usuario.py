@@ -17,3 +17,11 @@ def autenticar_usuario(db: Session, email: str, contrasenia: str):
     if not verify_password(contrasenia, usuario.contrasenia):
         return None
     return usuario
+
+def eliminar_usuario(db: Session, usuario_id: int):
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        return None
+    db.delete(usuario)
+    db.commit()
+    return {"message": "Usuario eliminado correctamente"}
