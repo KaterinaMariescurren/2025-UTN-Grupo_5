@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -46,3 +46,27 @@ def buscar_locales(nombre: str = None, tipo_local_id: int = None, direccion_id: 
 def listar_locales_con_menus(db: Session = Depends(get_db)):
     """Devuelve los locales que ofrecen al menos un menú."""
     return crud_local.listar_locales_con_menus(db)
+
+# Habilitar o deshabilitar un local (solo administrador)
+@router.patch("/{local_id}/habilitar", response_model=LocalRespuesta)
+def cambiar_estado_local(
+    local_id: int,
+    habilitado: bool,
+    db: Session = Depends(get_db),
+    usuario: dict = Depends(verificar_token)  # el token devuelve info del usuario
+):
+    # Verificar que sea administrador
+    if usuario.get("tipo") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los administradores pueden cambiar el estado de un local."
+        )
+
+    if habilitado == True:
+        local = crud_local.habilitar_local(db, local_id)
+    else :
+        local = crud_local.deshabilitar_local(db, local_id)
+    
+    if not local:
+        raise HTTPException(status_code=404, detail="Local no encontrado")
+    return local
