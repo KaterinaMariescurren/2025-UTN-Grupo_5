@@ -38,7 +38,6 @@ export default function NuevaCategoriaScreen() {
         throw new Error(data.detail || "Error al crear la categoría");
       }
 
-      Alert.alert("Éxito", data.mensaje || "Categoría creada correctamente");
       router.back(); // volver a la pantalla de categorías
     } catch (error: any) {
       console.error(error);

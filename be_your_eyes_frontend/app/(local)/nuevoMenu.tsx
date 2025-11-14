@@ -35,7 +35,6 @@ export default function NuevoMenuScreen() {
         throw new Error(errorData.detail || "Error al crear el menú");
       }
 
-      Alert.alert("Éxito", "Menú creado correctamente");
       router.back(); // volver a la pantalla de menus
     } catch (error: any) {
       console.error(error);

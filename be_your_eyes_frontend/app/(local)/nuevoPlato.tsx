@@ -53,7 +53,6 @@ export default function NuevoPlatoScreen() {
         throw new Error(data.detail || "Error al crear el plato");
       }
 
-      Alert.alert("Éxito", "Plato creado correctamente");
       router.back(); // vuelve a la pantalla de platos
     } catch (error: any) {
       console.error(error);
