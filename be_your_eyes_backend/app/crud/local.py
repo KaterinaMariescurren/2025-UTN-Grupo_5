@@ -74,11 +74,26 @@ def actualizar_local(db: Session, local_id: int, local_data: LocalActualizar):
     return db_local
 
 def eliminar_local(db: Session, local_id: int):
-    db_local = db.query(Local).filter(Local.id == local_id).first()
-    if db_local:
-        db.delete(db_local)
-        db.commit()
-    return db_local
+    local = db.query(Local).filter(Local.id == local_id).first()
+    if not local:
+        return None
+
+    # Borrar dependencias
+    db.query(Horario).filter(Horario.local_id == local_id).delete()
+    db.query(Menu).filter(Menu.local_id == local_id).delete()
+
+    # Guardar el id del usuario antes de borrar el local
+    usuario_id = local.usuario_id
+
+    # Borrar el local
+    db.delete(local)
+
+    # Borrar el usuario asociado
+    eliminar_usuario(db, usuario_id)
+
+    db.commit()
+    return {"message": "Local y usuario eliminados correctamente"}
+
 
 def buscar_locales(db: Session, usuario: dict, nombre: str = None, tipo_local_id: int = None, direccion_id: int = None):
     query = db.query(Local)
