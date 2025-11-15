@@ -22,6 +22,18 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+interface localData {
+    id: number;
+    nombre: string;
+    email: string;  
+    telefono: string;
+    direccion: {
+        calle: string;
+        altura: string;
+        codigo_postal: string;
+    };
+}
+
 export default function VerPerfilLocalScreen() {
     const { accessToken, logout } = useAuth();
     const { apiFetch } = useApi();
