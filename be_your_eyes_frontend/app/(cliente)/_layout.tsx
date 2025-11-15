@@ -1,6 +1,6 @@
 import { Colors } from '@/constants/Colors';
 import { Stack, useRouter } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { useAuth } from "@/contexts/authContext";
 import { useEffect } from "react";
@@ -8,7 +8,7 @@ import { useEffect } from "react";
 const ProfileButton = ({ router }) => (
   <TouchableOpacity
     onPress={() => {
-      router.replace("/perfil");
+      router.push("/(cliente)/perfil");
     }}
     style={styles.iconButton}
     accessible
@@ -33,10 +33,25 @@ const BackButton = ({ router }) => (
   </TouchableOpacity>
 );
 
-export default function RootLayout() {
-  const router = useRouter();
+const LogoutButton = ({ logout }) => (
+  <TouchableOpacity
+    onPress={logout}
+    accessibilityRole="button"
+    accessibilityLabel="Cerrar sesión"
+    accessibilityHint="Cierra tu sesión actual"
+  >
+    <Ionicons
+      name="log-out-outline"
+      size={26}
+      color={Colors.text}
+      style={styles.iconButton}
+    />
+  </TouchableOpacity>
+);
 
-  const { accessToken } = useAuth();
+export default function ClienteLayout() {
+  const router = useRouter();
+  const { accessToken, logout } = useAuth();
 
   useEffect(() => {
     if (!accessToken) {
@@ -44,18 +59,24 @@ export default function RootLayout() {
     }
   }, [accessToken, router]);
 
-  const getScreenOptions = (screenName: string) => {
-    return {
-      headerTitle: "",
-      headerRight: () => <ProfileButton router={router} />,
-      headerLeft: screenName === "tiporestaurante" ? undefined : () => <BackButton router={router} />,
-      headerStyle: {
-        backgroundColor: Colors.background,
-        shadowColor: 'transparent',
-      },
-      headerShadowVisible: false,
-    };
-  };
+  const getScreenOptions = (screenName: string) => ({
+    headerTitle: "",
+    headerRight: () => {
+      // Si estamos en perfil o perfil/editar, mostrar logout
+      if (screenName === "perfil" || screenName === "editarPerfil") {
+        return <LogoutButton logout={logout} />;
+      }
+      // En cualquier otra pantalla, mostrar perfil
+      return <ProfileButton router={router} />;
+    },
+    // Solo mostrar back si NO es tiporestaurante (pantalla principal)
+    headerLeft: screenName === "tiporestaurante" ? undefined : () => <BackButton router={router} />,
+    headerStyle: {
+      backgroundColor: Colors.background,
+      shadowColor: 'transparent',
+    },
+    headerShadowVisible: false,
+  });
 
   return (
     <Stack>
@@ -65,6 +86,8 @@ export default function RootLayout() {
       <Stack.Screen name="restaurantes/all" options={getScreenOptions("restaurantes/all")} />
       <Stack.Screen name="menu/[id]" options={getScreenOptions("menu/[id]")} />
       <Stack.Screen name="menu/categoria/[id]" options={getScreenOptions("menu/categoria/[id]")} />
+      <Stack.Screen name="perfil" options={getScreenOptions("perfil")} />
+      <Stack.Screen name="editarPerfil" options={getScreenOptions("editarPerfil")} />
     </Stack>
   );
 }
