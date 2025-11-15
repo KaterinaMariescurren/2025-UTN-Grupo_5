@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.rutas import qr 
 from app.bd.sesion import engine, Base 
 from .rutas import menus, auth, platos, categorias,local, tipo_local,direccion,horario,persona,notificacion, punto_impresion
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,6 +37,7 @@ app.include_router(persona.router)
 app.include_router(notificacion.router)
 app.include_router(punto_impresion.router)
 app.include_router(auth.router)
+app.include_router(qr.router)
 
 @app.get("/")
 def root():

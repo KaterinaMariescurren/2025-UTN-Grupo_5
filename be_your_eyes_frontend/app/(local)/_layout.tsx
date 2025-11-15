@@ -1,6 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { useAuth } from '@/contexts/authContext';
 import { Colors } from '@/constants/Colors';
@@ -8,7 +8,7 @@ import { Colors } from '@/constants/Colors';
 const ProfileButton = ({ router }) => (
   <TouchableOpacity
     onPress={() => {
-      router.replace("/perfil");
+      router.push("/perfil");
     }}
     style={styles.iconButton}
     accessible
@@ -33,9 +33,25 @@ const BackButton = ({ router }) => (
   </TouchableOpacity>
 );
 
+const LogoutButton = ({ logout }) => (
+  <TouchableOpacity
+    onPress={logout}
+    accessibilityRole="button"
+    accessibilityLabel="Cerrar sesión"
+    accessibilityHint="Cierra tu sesión actual"
+  >
+    <Ionicons
+      name="log-out-outline"
+      size={26}
+      color={Colors.text}
+      style={styles.iconButton}
+    />
+  </TouchableOpacity>
+);
+
 export default function LocalLayout() {
   const router = useRouter();
-  const { accessToken } = useAuth();
+  const { accessToken, logout } = useAuth();
 
   useEffect(() => {
     if (!accessToken) {
@@ -45,8 +61,14 @@ export default function LocalLayout() {
 
   const getScreenOptions = (screenName: string) => ({
     headerTitle: '',
-    headerRight: () => <ProfileButton router={router} />,
-    // Solo mostrar back si NO es index
+    headerRight: () => {
+      // Si estamos en perfil/index o perfil/editar, mostrar logout
+      if (screenName === 'perfil/index' || screenName === 'perfil/editar') {
+        return <LogoutButton logout={logout} />;
+      }
+      // En cualquier otra pantalla, mostrar perfil
+      return <ProfileButton router={router} />;
+    },    // Solo mostrar back si NO es index
     headerLeft: screenName === 'index' ? undefined : () => <BackButton router={router} />,
     headerStyle: {
       backgroundColor: Colors.background,
@@ -65,6 +87,8 @@ export default function LocalLayout() {
       <Stack.Screen name="nuevoPlato" options={getScreenOptions('nuevoPlato')} />
       <Stack.Screen name="editarPlato" options={getScreenOptions('editarPlato')} />
       <Stack.Screen name="puntosImpresion" options={getScreenOptions('puntosImpresion')} />
+      <Stack.Screen name="perfil/index" options={getScreenOptions('perfil/index')} />
+      <Stack.Screen name="perfil/editar" options={getScreenOptions('perfil/editar')} />
     </Stack>
   );
 }
