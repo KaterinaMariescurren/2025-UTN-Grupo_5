@@ -8,3 +8,4 @@ requests>=2.31.0
 email-validator
 python-jose[cryptography]
 bcrypt
+qrcode[pil]==7.4.2
