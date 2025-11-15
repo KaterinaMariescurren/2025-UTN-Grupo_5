@@ -30,10 +30,12 @@ class LocalActualizar(BaseModel):
     telefono: Optional[str] = None
     direccion_id: Optional[int] = None
     tipo_local_id: Optional[int] = None
+    email: Optional[EmailStr] = None
 
 class LocalRespuesta(LocalBase):
     id: int
     horarios: List[HorarioRespuesta] = []
     direccion: Optional[DireccionRespuesta] = None
+    email: Optional[EmailStr] = None
     class Config:
         orm_mode = True
