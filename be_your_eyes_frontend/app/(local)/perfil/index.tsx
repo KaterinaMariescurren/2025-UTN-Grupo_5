@@ -52,6 +52,7 @@ export default function VerPerfilLocalScreen() {
                     // Obtener datos del local
                     const resLocalData = await apiFetch(`${process.env.EXPO_PUBLIC_API_URL}locales/${dataLocal.local_id}`);
                     const data = await resLocalData.json();
+                    console.log(data);
                     setLocalData(data);
 
                     // Obtener horarios del local desde el endpoint de horarios
@@ -146,7 +147,6 @@ export default function VerPerfilLocalScreen() {
             if (response.ok) {
                 await logout();
                 setShowModalDelete(false);
-                router.replace("/(perfil)/despedida");
             } else if (response.status === 401) {
                 Alert.alert("Sesión expirada", "Por favor, vuelve a iniciar sesión.");
                 logout();
@@ -239,7 +239,7 @@ export default function VerPerfilLocalScreen() {
                 {/* Botones */}
                 <CustomButton
                     label="Editar perfil"
-                    onPress={() => router.push("/editar")}
+                    onPress={() => router.push("/perfil/editar")}
                     type="primary"
                 />
                 <CustomButton
