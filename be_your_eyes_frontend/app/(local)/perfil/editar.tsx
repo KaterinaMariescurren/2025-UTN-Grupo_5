@@ -121,7 +121,7 @@ export default function EditarPerfilLocalScreen() {
 
             if (!res.ok) throw new Error("Error al actualizar el local");
             Alert.alert("✅ Éxito", "Los datos se actualizaron correctamente");
-            router.replace("/(perfil)");
+            router.replace("/perfil");
         } catch (error) {
             console.error("Error al guardar cambios:", error);
             Alert.alert("❌ Error", "No se pudieron guardar los cambios");
