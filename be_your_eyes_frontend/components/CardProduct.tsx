@@ -1,41 +1,42 @@
 import { Colors } from "@/constants/Colors";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { DimensionValue, StyleSheet, Text, View } from "react-native";
 
 interface CardProductProps {
     title: string;
     description: string;
     price: string | number;
+    width?: DimensionValue;
 }
 
-export default function CardProduct({ title, description, price }: CardProductProps) {
+export default function CardProduct({ title, description, price, width = "80%" }: CardProductProps) {
     return (
         <View
-            style={styles.card}
+            style={[styles.card, { width }]}
             accessible
-            accessibilityRole="summary" // 👈 indica que es una tarjeta de resumen o información
-            accessibilityLabel={`${title}. ${description}. Precio: ${price} pesos.`}
-            accessibilityHint="Tarjeta de producto con título, descripción y precio."
+            accessibilityRole="summary"
+            accessibilityLabel={`${title}. Precio: ${price} pesos. ${description}`}
         >
             <Text
                 style={styles.title}
-                accessibilityRole="header" // 👈 el lector lo anuncia como título principal
-                accessibilityLabel={`Título: ${title}`}
+                accessibilityElementsHidden={true}
+                importantForAccessibility="no"
             >
                 {title}
             </Text>
 
             <Text
                 style={styles.description}
-                accessibilityLabel={`Descripción: ${description}`}
+                accessibilityElementsHidden={true}
+                importantForAccessibility="no"
             >
                 {description}
             </Text>
 
             <Text
                 style={styles.price}
-                accessibilityLabel={`Precio: ${price} pesos`}
-            >
+                accessibilityElementsHidden={true}
+                importantForAccessibility="no"            >
                 ${price}
             </Text>
         </View>
@@ -44,7 +45,6 @@ export default function CardProduct({ title, description, price }: CardProductPr
 
 const styles = StyleSheet.create({
     card: {
-        width: "80%",
         backgroundColor: Colors.secondary,
         borderRadius: 8,
         paddingVertical: 16,

@@ -1,3 +1,4 @@
+import Buscardor from "@/components/Buscador";
 import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useApi } from "@/utils/api";
 import { Ionicons } from "@expo/vector-icons";
@@ -66,7 +67,7 @@ export default function PuntosImpresionScreen() {
   const fetchPuntos = async () => {
     try {
       const res = await apiFetch(`${process.env.EXPO_PUBLIC_API_URL}puntos-impresion/`);
-      
+
       if (!res.ok) {
         throw new Error("Error al cargar los puntos");
       }
@@ -93,14 +94,14 @@ export default function PuntosImpresionScreen() {
 
   const toggleBottomSheet = () => {
     const toValue = isExpanded ? BOTTOM_SHEET_MIN_HEIGHT : BOTTOM_SHEET_MAX_HEIGHT;
-    
+
     Animated.spring(animatedHeight, {
       toValue,
       useNativeDriver: false,
       tension: 50,
       friction: 8,
     }).start();
-    
+
     setIsExpanded(!isExpanded);
   };
 
@@ -141,20 +142,44 @@ export default function PuntosImpresionScreen() {
   };
 
   const renderPuntoItem = ({ item }: { item: PuntoImpresion }) => (
-    <View style={styles.puntoCard}>
+    <View
+      style={styles.puntoCard}
+      accessible={true}
+      accessibilityLabel={`Centro de impresión ${item.nombre}, ubicado en ${item.direccion_texto}${item.horario ? `. Horario: ${item.horario}` : ''}`}
+    >
       <View style={styles.puntoCardHeader}>
         <View style={styles.puntoCardInfo}>
-          <Text style={styles.puntoNombre}>{item.nombre}</Text>
-          <Text style={styles.puntoDireccion}>{item.direccion_texto}</Text>
+          <Text
+            style={styles.puntoNombre}
+            accessibilityElementsHidden={true}
+            importantForAccessibility="no"
+          >
+            {item.nombre}
+          </Text>
+          <Text
+            style={styles.puntoDireccion}
+            accessibilityElementsHidden={true}
+            importantForAccessibility="no"
+          >
+            {item.direccion_texto}
+          </Text>
           {item.horario && (
-            <View style={styles.horarioContainer}>
+            <View
+              style={styles.horarioContainer}
+              accessible={false}
+            >
               <Ionicons name="time-outline" size={16} color="#666" />
-              <Text style={styles.puntoHorario}>{item.horario}</Text>
+              <Text
+                style={styles.puntoHorario}
+                accessibilityElementsHidden={true}
+              >
+                {item.horario}
+              </Text>
             </View>
           )}
         </View>
       </View>
-      
+
       <View style={styles.puntoCardActions}>
         <TouchableOpacity
           style={[styles.actionButton, styles.viewButton]}
@@ -162,17 +187,27 @@ export default function PuntosImpresionScreen() {
             focusOnMarker(item);
             toggleBottomSheet();
           }}
+          accessibilityRole="button"
+          accessibilityLabel={`Ver el centro ${item.nombre} en el mapa`}
+          accessibilityHint="Muestra la ubicación del centro en el mapa principal"
         >
           <Ionicons name="eye-outline" size={20} color="#50C2C9" />
-          <Text style={styles.viewButtonText}>Ver en mapa</Text>
+          <Text style={styles.viewButtonText} accessibilityElementsHidden={true}>
+            Ver en mapa
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.actionButton, styles.directionsButton]}
           onPress={() => openInMaps(item)}
+          accessibilityRole="button"
+          accessibilityLabel={`Cómo llegar al centro ${item.nombre}`}
+          accessibilityHint="Abre la aplicación de mapas con la ruta hacia el centro"
         >
           <Ionicons name="navigate-outline" size={20} color="#FFFFFF" />
-          <Text style={styles.directionsButtonText}>Cómo llegar</Text>
+          <Text style={styles.directionsButtonText} accessibilityElementsHidden={true}>
+            Cómo llegar
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -180,14 +215,20 @@ export default function PuntosImpresionScreen() {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <Ionicons name="location-outline" size={64} color="#CCC" />
+      <Ionicons
+        name="location-outline"
+        size={64}
+        color="#CCC"
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      />
       <Text style={styles.emptyStateTitle}>
         {searchText ? "No se encontraron puntos" : "No hay puntos disponibles"}
       </Text>
       <Text style={styles.emptyStateText}>
-        {searchText 
-          ? "Intenta con otra búsqueda" 
-          : "Agrega nuevos puntos de impresión desde el panel de administración"}
+        {searchText
+          ? "Intenta con otra búsqueda"
+          : "Espera a que los administradores agreguen puntos de impresión"}
       </Text>
     </View>
   );
@@ -202,28 +243,23 @@ export default function PuntosImpresionScreen() {
   }
 
   return (
-    <View style={styles.container}>
-        <Text style={GlobalStyles.tittle}>Central de impresión</Text>
-      <View style={styles.searchContainer}>
-        <Ionicons
-          name="search"
-          size={20}
-          color="#999"
-          style={styles.searchIcon}
-        />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Buscar por nombre o ubicación..."
-          placeholderTextColor="#999"
-          value={searchText}
-          onChangeText={setSearchText}
-        />
-        {searchText !== "" && (
-          <TouchableOpacity onPress={() => setSearchText("")}>
-            <Ionicons name="close-circle" size={20} color="#999" />
-          </TouchableOpacity>
-        )}
-      </View>
+    <View
+      style={GlobalStyles.container}
+      accessibilityLabel="Pantalla de Centro de impresión en braille"
+    >
+      <Text
+        style={GlobalStyles.tittle}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        Central de impresión
+      </Text>
+      <Buscardor
+        value={searchText}
+        onChangeText={setSearchText}
+        placeholder="Buscar centros de impresión..."
+        accessibilityLabel="Buscar centros de impresión por nombre o ubicación"
+      />
 
       <MapView
         ref={mapRef}
@@ -237,6 +273,8 @@ export default function PuntosImpresionScreen() {
         }}
         showsUserLocation={true}
         showsMyLocationButton={false}
+        accessibilityLabel="Mapa con los puntos de impresión disponibles"
+        accessibilityHint="Toque dos veces para explorar los puntos de impresión en el mapa"
       >
         {puntosFiltrados.map((punto) => (
           <Marker
@@ -256,22 +294,40 @@ export default function PuntosImpresionScreen() {
       <TouchableOpacity
         style={styles.locationButton}
         onPress={centerOnUserLocation}
+        accessibilityRole="button"
+        accessibilityLabel="Centrar el mapa en mi ubicación actual"
+        accessibilityHint="Mueve el mapa para mostrar tu ubicación en el centro"
       >
         <Ionicons name="locate" size={24} color="#50C2C9" />
       </TouchableOpacity>
 
-      <Animated.View style={[styles.bottomSheet, { height: animatedHeight }]}>
+      <Animated.View
+        style={[styles.bottomSheet, { height: animatedHeight }]}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
         <TouchableOpacity
           style={styles.bottomSheetHandle}
           onPress={toggleBottomSheet}
           activeOpacity={0.9}
+          accessibilityRole="button"
+          accessibilityLabel={isExpanded
+            ? "Ocultar lista de centros de impresión"
+            : "Mostrar lista de centros de impresión"}
+          accessibilityHint="Expande o contrae la lista de centros disponibles"
         >
           <View style={styles.handle} />
           <View style={styles.bottomSheetHeader}>
-            <Text style={styles.bottomSheetTitle}>
+            <Text
+              style={styles.bottomSheetTitle}
+              accessibilityRole="header"
+            >
               Puntos de impresión en braille
             </Text>
-            <Text style={styles.bottomSheetSubtitle}>
+            <Text
+              style={styles.bottomSheetSubtitle}
+              accessibilityElementsHidden={true}
+            >
               {puntosFiltrados.length} {puntosFiltrados.length === 1 ? "punto" : "puntos"} disponibles
             </Text>
           </View>
@@ -290,6 +346,8 @@ export default function PuntosImpresionScreen() {
             contentContainerStyle={styles.listContainer}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={renderEmptyState}
+            accessibilityRole="list"
+            accessibilityLabel="Lista de puntos de impresión"
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
@@ -306,10 +364,6 @@ export default function PuntosImpresionScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-  },
   centered: {
     flex: 1,
     justifyContent: "center",
@@ -321,48 +375,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#FFFFFF",
   },
-  header: {
-    backgroundColor: "#FFFFFF",
-    paddingTop: 60,
-    paddingBottom: 15,
-    paddingHorizontal: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-  },
-  backButton: {
-    marginRight: 15,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#000000",
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F5F5F5",
-    margin: 15,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
-  searchIcon: {
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: "#000000",
-  },
   map: {
     flex: 1,
   },
   locationButton: {
     position: "absolute",
-    bottom: BOTTOM_SHEET_MIN_HEIGHT + 20,
-    right: 20,
+    bottom: BOTTOM_SHEET_MIN_HEIGHT + 60,
+    right: 30,
     width: 50,
     height: 50,
     borderRadius: 25,

@@ -76,7 +76,7 @@ export default function RestaurantesPorTipo() {
           .toLowerCase()
           .includes(searchTerm.toLowerCase()))
   );
-
+  
   const renderContent = () => {
     if (loading) {
       return (
@@ -90,7 +90,12 @@ export default function RestaurantesPorTipo() {
 
     if (locales.length === 0) {
       return (
-        <View style={styles.noDataContainer}>
+        <View
+          style={styles.noDataContainer}
+          accessible
+          accessibilityRole="alert"
+          accessibilityLabel={`No hay locales disponibles para el tipo ${nombreTipo}`}
+        >
           <Text style={styles.noDataText}>
             {" "}
             No hay locales disponibles para este tipo.
@@ -99,9 +104,27 @@ export default function RestaurantesPorTipo() {
       );
     }
 
+    if (filteredLocales.length === 0) {
+      return (
+        <View
+          style={styles.noDataContainer}
+          accessible
+          accessibilityRole="alert"
+          accessibilityLabel="No se encontraron restaurantes que coincidan con la búsqueda"
+        >
+          <Text style={styles.noDataText}>
+            No se encontraron restaurantes que coincidan con la búsqueda.
+          </Text>
+        </View>
+      );
+    }
+
     return (
       <FlatList
         data={filteredLocales}
+        showsVerticalScrollIndicator={false}
+        accessibilityRole="list"
+        accessibilityLabel="Lista de todos los restaurantes disponibles"
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <CardButton
@@ -109,7 +132,10 @@ export default function RestaurantesPorTipo() {
             address={`${item.direccion.calle} ${item.direccion.altura}`}
             tieneMenuAccesible={item.tiene_menu_accesible}
             onPress={() => router.push(`/local/${item.id}`)}
-            accessibilityHintText=""
+            accessibilityHintText={
+              "Toca para ver la información detallada del restaurante" +
+              item.nombre
+            }
             width={"100%"}
           />
         )}
@@ -118,15 +144,32 @@ export default function RestaurantesPorTipo() {
   };
 
   return (
-    <View style={GlobalStyles.container}>
-      <Text style={GlobalStyles.tittleCliente}>{nombreTipo}</Text>
-      <Text style={GlobalStyles.subtitle}>Haga clic para más información</Text>
+    <View
+      style={GlobalStyles.container}
+      accessible
+      accessibilityLabel={`Pantalla de restaurantes del tipo ${nombreTipo}`}
+      accessibilityHint="Desliza o usa el rotor para explorar los restaurantes disponibles"
+    >
+      <Text
+        style={GlobalStyles.tittleMarginVertical}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        {nombreTipo}
+      </Text>
+      <Text
+        style={GlobalStyles.subtitle}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        Haga clic para más información
+      </Text>
 
       <Buscardor
         value={searchTerm}
         onChangeText={setSearchTerm}
-        placeholder="Buscar restaurantes..."
-        accessibilityLabel="Buscar restaurantes"
+        placeholder={"Buscar tipos de " + nombreTipo + "..."}
+        accessibilityLabel={"Buscar tipos de " + nombreTipo}
       />
 
       {renderContent()}

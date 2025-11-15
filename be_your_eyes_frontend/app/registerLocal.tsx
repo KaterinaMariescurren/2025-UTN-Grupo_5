@@ -12,7 +12,10 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -184,7 +187,9 @@ export default function RegisterLocalScreen() {
   };
 
   return (
-    <View style={GlobalStyles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={GlobalStyles.container}>
       {step === 1 && (
         <View>
           <View
@@ -672,7 +677,7 @@ export default function RegisterLocalScreen() {
           accessibilityHint="Siguiente"
         />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

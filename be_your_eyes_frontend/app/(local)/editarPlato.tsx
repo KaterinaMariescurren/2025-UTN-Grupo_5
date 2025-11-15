@@ -65,7 +65,7 @@ export default function EditarPlatoScreen() {
           precio: parseFloat(precio),
         }),
       });
-      
+
       const data = await res.json();
 
       if (!res.ok) {
@@ -84,12 +84,19 @@ export default function EditarPlatoScreen() {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={GlobalStyles.container}
+      accessibilityLabel="Pantalla de edicion de un plato"
     >
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={GlobalStyles.tittle}>Editar Plato</Text>
+        <Text
+          style={GlobalStyles.tittle}
+          accessibilityElementsHidden={true}
+          importantForAccessibility="no"
+        >
+          Editar Plato
+        </Text>
         <View style={GlobalStyles.containerInputs}>
           <CustomInput
             label="Nombre del plato"
@@ -97,7 +104,7 @@ export default function EditarPlatoScreen() {
             onChangeText={setNombre}
             placeholder="Ingrese nombre"
             keyboardType="default"
-            accessibilityHint="Ingresa el nombre del plato"
+            accessibilityHint="Edita el nombre del plato"
           />
           <CustomInput
             label="Descripción del plato"
@@ -105,7 +112,7 @@ export default function EditarPlatoScreen() {
             onChangeText={setDescripcion}
             placeholder="Ingrese la descripción"
             keyboardType="default"
-            accessibilityHint="Ingresa la descripción del plato"
+            accessibilityHint="Edita la descripción del plato"
           />
           <CustomInput
             label="Precio del plato"
@@ -113,7 +120,7 @@ export default function EditarPlatoScreen() {
             onChangeText={setPrecio}
             placeholder="Ingrese el precio"
             keyboardType="numeric"
-            accessibilityHint="Ingresa el precio del plato"
+            accessibilityHint="Edita el precio del plato"
           />
         </View>
         <View style={GlobalStyles.containerButton}>

@@ -5,7 +5,7 @@ import { Colors } from "@/constants/Colors";
 
 interface SearchBarProps {
   value: string;
-  onChangeText: (text: string) => void; 
+  onChangeText: (text: string) => void;
   placeholder?: string;
   accessibilityLabel?: string;
 }
@@ -17,13 +17,7 @@ export default function Buscardor({
   accessibilityLabel = "Barra de búsqueda",
 }: SearchBarProps) {
   return (
-    <View
-      style={[styles.container]}
-      accessible
-      accessibilityRole="search"
-      accessibilityLabel={accessibilityLabel}
-      accessibilityHint="Escribe el texto que deseas buscar"
-    >
+    <View style={[styles.container]}>
       <Feather
         name="search"
         size={18}
@@ -38,7 +32,9 @@ export default function Buscardor({
         placeholderTextColor="#88888B"
         value={value}
         onChangeText={onChangeText}
-        accessibilityLabel="Campo de texto de búsqueda"
+        accessibilityRole="search"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint="Escribe el texto que deseas buscar"
       />
     </View>
   );

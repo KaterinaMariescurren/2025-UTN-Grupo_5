@@ -4,10 +4,18 @@ import CustomModal from "@/components/CustomModal";
 import { Colors } from "@/constants/Colors";
 import { GlobalStyles } from "@/constants/GlobalStyles";
 import MaterialIcons from "@expo/vector-icons/build/MaterialIcons";
+import React, { useCallback, useRef, useState } from "react";
+import { useApi } from "@/utils/api"
+import {
+  AccessibilityInfo,
+  Alert,
+  findNodeHandle,
+  FlatList,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
-import { useApi } from "@/utils/api";
-import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
 
 type Categoria = {
   id: number;
@@ -26,6 +34,9 @@ export default function CategoriasScreen() {
   );
   const { apiFetch } = useApi();
   const router = useRouter();
+
+  const botonesRef = useRef(null);
+
 
   useFocusEffect(
     useCallback(() => {
@@ -66,14 +77,45 @@ export default function CategoriasScreen() {
     }
   };
 
+  const handleSkipList = () => {
+    const nodeHandle = findNodeHandle(botonesRef.current);
+    if (nodeHandle) {
+      setTimeout(() => {
+        AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+      }, 100);
+    }
+  };
+
   return (
-    <View style={GlobalStyles.container}>
-      <Text style={GlobalStyles.tittle}>
+    <View
+      style={GlobalStyles.container}
+      accessibilityLabel={"Pantalla de Categorías del Menú" + menuName}
+    >
+      <Text
+        style={GlobalStyles.tittle}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
         Categorías del {"\n"} Menú {menuName}
       </Text>
+      <TouchableOpacity
+        onPress={handleSkipList}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel="Saltar lista de Menús"
+        accessibilityHint="Salta directamente al botón nueva Categoría"
+        style={{
+          height: 1,
+        }}
+      >
+        <Text>Saltar lista</Text>
+      </TouchableOpacity>
       <FlatList
         data={categorias}
         keyExtractor={(item) => item.id.toString()}
+        showsVerticalScrollIndicator={false}
+        accessibilityRole="list"
+        accessibilityLabel="Lista de Categorías"
         renderItem={({ item }) => (
           <View
             style={{
@@ -85,15 +127,8 @@ export default function CategoriasScreen() {
           >
             <CardButton
               name={item.nombre}
-              onPress={() =>
-                router.push(
-                  `/(local)/platos?menuId=${menuId}&categoriaId=${item.id}`
-                )
-              }
-              accessibilityHintText={
-                "Toca para ver los diferentes platos de la categoría" +
-                item.nombre
-              }
+              onPress={() => router.push(`/(local)/platos?menuId=${menuId}&categoriaId=${item.id}&categoriaName=${item.nombre}`)}
+              accessibilityHintText={"Toca para ver los diferentes platos de la categoría" + item.nombre}
             />
             <TouchableOpacity
               onPress={() => abrirModal(item)}
@@ -118,6 +153,7 @@ export default function CategoriasScreen() {
           }
           type="primary"
           accessibilityHint="Abre la pantalla para crear una nueva categoría"
+          ref={botonesRef}
         />
       </View>
       <CustomModal

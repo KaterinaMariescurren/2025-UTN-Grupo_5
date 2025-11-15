@@ -38,7 +38,6 @@ export default function NuevaCategoriaScreen() {
         throw new Error(data.detail || "Error al crear la categoría");
       }
 
-      Alert.alert("Éxito", data.mensaje || "Categoría creada correctamente");
       router.back(); // volver a la pantalla de categorías
     } catch (error: any) {
       console.error(error);
@@ -50,8 +49,13 @@ export default function NuevaCategoriaScreen() {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={GlobalStyles.container}
+      accessibilityLabel="Pantalla de creacion de una nueva Categoría"
     >
-      <Text style={GlobalStyles.tittle}>
+      <Text
+        style={GlobalStyles.tittle}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
         Nueva Categoría
       </Text>
 

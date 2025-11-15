@@ -7,9 +7,11 @@ import { useAuth } from "@/contexts/authContext";
 import MaterialIcons from "@expo/vector-icons/build/MaterialIcons";
 import { useApi } from "@/utils/api";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useRef} from "react";
 import {
+  AccessibilityInfo,
   Alert,
+  findNodeHandle,
   FlatList,
   Text,
   TouchableOpacity,
@@ -25,15 +27,18 @@ type Plato = {
 
 export default function PlatosScreen() {
   const { accessToken } = useAuth();
-  const { menuId, categoriaId } = useLocalSearchParams<{
+  const { menuId, categoriaId, categoriaName } = useLocalSearchParams<{
     menuId: string;
     categoriaId: string;
+    categoriaName: string;
   }>();
   const [platos, setPlatos] = useState<Plato[]>([]);
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [platoBorrar, setPlatoBorrar] = useState<Plato | null>(null);
   const { apiFetch } = useApi();
+
+  const botonesRef = useRef(null);
 
   useFocusEffect(
       useCallback(() => {
@@ -82,13 +87,47 @@ export default function PlatosScreen() {
     }
   };
 
+  const handleSkipList = () => {
+    const nodeHandle = findNodeHandle(botonesRef.current);
+    if (nodeHandle) {
+      setTimeout(() => {
+        AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+      }, 100);
+    }
+  };
+
   return (
-    <View style={GlobalStyles.container}>
-      <Text style={GlobalStyles.tittle}>Platos</Text>
+    <View
+      style={GlobalStyles.container}
+      accessibilityLabel={"Pantalla de platos de la Categoría" + categoriaName}
+    >
+      <Text
+        style={GlobalStyles.tittle}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        Platos
+      </Text>
+
+      <TouchableOpacity
+        onPress={handleSkipList}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel="Saltar lista de Menús"
+        accessibilityHint="Salta directamente al botón nuevo plato"
+        style={{
+          height: 1,
+        }}
+      >
+        <Text>Saltar lista</Text>
+      </TouchableOpacity>
 
       <FlatList
         data={platos}
         keyExtractor={(item) => item.id.toString()}
+        showsVerticalScrollIndicator={false}
+        accessibilityRole="list"
+        accessibilityLabel="Lista de platos"
         renderItem={({ item }) => (
           <View
             style={{
@@ -135,6 +174,7 @@ export default function PlatosScreen() {
           onPress={() => router.push(`/(local)/nuevoPlato?menuId=${menuId}&categoriaId=${categoriaId}`)}
           type="primary"
           accessibilityHint="Abre la pantalla para crear un nuevo plato"
+          ref={botonesRef}
         />
       </View>
       <CustomModal

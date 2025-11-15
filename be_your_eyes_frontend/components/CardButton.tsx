@@ -12,11 +12,19 @@ interface CardLocalProps {
     width?: DimensionValue;
 }
 
-export default function CardButton({ name, address, onPress, accessibilityHintText, width = "80%", tieneMenuAccesible = false }: CardLocalProps) {
+export default function CardButton({ name, address, onPress, accessibilityHintText, width = "80%", tieneMenuAccesible }: CardLocalProps) {
 
-    const accessibilityLabel = address
+    let accessibilityLabel = address
         ? `${name}, ubicado en ${address}`
         : name;
+
+    if (tieneMenuAccesible != null) {
+        if (tieneMenuAccesible) {
+            accessibilityLabel += ", con carta accesible.";
+        } else {
+            accessibilityLabel += ", sin carta accesible.";
+        }
+    }
 
     return (
         <TouchableOpacity

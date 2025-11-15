@@ -19,7 +19,7 @@ export default function TodosLosRestaurantes() {
   useFocusEffect(
   useCallback(() => {
     setLoading(true);
-    
+
     apiFetch(`${BACKEND_URL}locales/`)
       .then(res => res.json())
       .then(data => {
@@ -47,15 +47,39 @@ export default function TodosLosRestaurantes() {
 
     if (locales.length === 0) {
       return (
-        <View style={styles.noDataContainer}>
+        <View
+          style={styles.noDataContainer}
+          accessible
+          accessibilityRole="alert"
+          accessibilityLabel="No hay locales disponibles en este momento"
+        >
           <Text style={styles.noDataText}> No hay locales disponibles en este momento.</Text>
         </View>
       );
     }
 
+    if (filteredLocales.length === 0) {
+      return (
+        <View
+          style={styles.noDataContainer}
+          accessible
+          accessibilityRole="alert"
+          accessibilityLabel="No se encontraron restaurantes que coincidan con la búsqueda"
+        >
+          <Text style={styles.noDataText}>
+            No se encontraron restaurantes que coincidan con la búsqueda.
+          </Text>
+        </View>
+      );
+    }
+
     return (
+
       <FlatList
         data={filteredLocales}
+        showsVerticalScrollIndicator={false}
+        accessibilityRole="list"
+        accessibilityLabel="Lista de todos los restaurantes disponibles"
         keyExtractor={item => item.id.toString()}
         renderItem={({ item }) => (
           <CardButton
@@ -63,7 +87,7 @@ export default function TodosLosRestaurantes() {
             address={`${item.direccion.calle} ${item.direccion.altura}`}
             tieneMenuAccesible={item.tiene_menu_accesible}
             onPress={() => router.push(`/local/${item.id}`)}
-            accessibilityHintText=""
+            accessibilityHintText={`Toca para ver la información detallada del restaurante ${item.nombre}`}
             width={"100%"}
           />
         )}
@@ -72,9 +96,26 @@ export default function TodosLosRestaurantes() {
   };
 
   return (
-    <View style={GlobalStyles.container}>
-      <Text style={GlobalStyles.tittleCliente}>Todos los restaurantes</Text>
-      <Text style={GlobalStyles.subtitle}>Encuentra tu local</Text>
+    <View
+      style={GlobalStyles.container}
+      accessible
+      accessibilityLabel="Pantalla de todos los restaurantes"
+      accessibilityHint="Desliza hacia abajo o usa el rotor para explorar los restaurantes disponibles"
+    >
+      <Text
+        style={GlobalStyles.tittleMarginVertical}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        Todos los restaurantes
+      </Text>
+      <Text
+        style={GlobalStyles.subtitle}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        Encuentra tu local
+      </Text>
 
       <Buscardor
         value={searchTerm}

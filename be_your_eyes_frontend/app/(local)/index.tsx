@@ -7,9 +7,11 @@ import { useAuth } from "@/contexts/authContext";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useApi } from "@/utils/api";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useRef } from "react";
 import {
+  AccessibilityInfo,
   Alert,
+  findNodeHandle,
   FlatList,
   StyleSheet,
   Text,
@@ -31,6 +33,8 @@ export default function MenusScreen() {
   const [menuBorrar, setMenuBorrar] = useState<Menu | null>(null);
   const { apiFetch } = useApi();
 
+  const botonesRef = useRef(null);
+  
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
@@ -84,12 +88,45 @@ export default function MenusScreen() {
     }
   };
 
+  const handleSkipList = () => {
+    const nodeHandle = findNodeHandle(botonesRef.current);
+    if (nodeHandle) {
+      setTimeout(() => {
+        AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+      }, 100);
+    }
+  };
+
   return (
-    <View style={GlobalStyles.container}>
-      <Text style={GlobalStyles.tittle}>Menús</Text>
+    <View
+      style={GlobalStyles.container}
+      accessibilityLabel="Pantalla de Menús"
+    >
+      <Text
+        style={GlobalStyles.tittle}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        Menús
+      </Text>
+      <TouchableOpacity
+        onPress={handleSkipList}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel="Saltar lista de Menús"
+        accessibilityHint="Salta directamente al botón nuevo Menús"
+        style={{
+          height: 1,
+        }}
+      >
+        <Text>Saltar lista</Text>
+      </TouchableOpacity>
       <FlatList
         data={menus}
         keyExtractor={(item) => item.id.toString()}
+        showsVerticalScrollIndicator={false}
+        accessibilityRole="list"
+        accessibilityLabel="Lista de Menús"
         renderItem={({ item }) => (
           <View
             style={{
@@ -101,14 +138,8 @@ export default function MenusScreen() {
           >
             <CardButton
               name={item.nombre}
-              onPress={() =>
-                router.push(
-                  `/(local)/categorias?menuId=${item.id}&menuName=${item.nombre}`
-                )
-              }
-              accessibilityHintText={
-                "Toca para ver las categorías del menu " + item.nombre
-              }
+              onPress={() => router.push(`/(local)/categorias?menuId=${item.id}&menuName=${item.nombre}`)}
+              accessibilityHintText={"Toca para ver las categorías del Menú " + item.nombre}
             />
             <View
               style={{
@@ -151,6 +182,7 @@ export default function MenusScreen() {
           onPress={() => router.push(`/(local)/nuevoMenu?localId=${localId}`)}
           type="primary"
           accessibilityHint="Abre la pantalla para crear un nuevo menú"
+          ref={botonesRef}
         />
         <CustomButton
           label="Centros de impresion"

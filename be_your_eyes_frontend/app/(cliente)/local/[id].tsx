@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   Alert,
   StyleSheet,
   Modal,
   FlatList,
+  TouchableOpacity,
+  findNodeHandle,
+  AccessibilityInfo,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { GlobalStyles } from "@/constants/GlobalStyles";
@@ -41,6 +43,10 @@ export default function DetalleLocal() {
   const { apiFetch } = useApi();
   const { accessToken } = useAuth();
 
+  const notificarRef = useRef(null);
+  const menusRef = useRef(null);
+
+
   useEffect(() => {
     if (!id) return;
     setLoading(true);
@@ -56,8 +62,8 @@ export default function DetalleLocal() {
         const menuData = Array.isArray(data)
           ? data
           : Array.isArray(data.menus)
-          ? data.menus
-          : [];
+            ? data.menus
+            : [];
         setMenus(menuData);
       })
       .catch((err) => console.error(err))
@@ -88,12 +94,26 @@ export default function DetalleLocal() {
           tiene_carta: cumple,
         }),
       });
-      Alert.alert(
-        "Gracias",
-        `Se notificó que el local ${cumple ? "CUMPLE" : "NO cumple"}.`
-      );
     } catch (error) {
       Alert.alert("Error", "No se pudo enviar la notificación.");
+    }
+  };
+
+  const handleSkipList = () => {
+    const nodeHandle = findNodeHandle(notificarRef.current);
+    if (nodeHandle) {
+      setTimeout(() => {
+        AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+      }, 100);
+    }
+  };
+
+  const handleSkipListHorarios = () => {
+    const nodeHandle = findNodeHandle(menusRef.current);
+    if (nodeHandle) {
+      setTimeout(() => {
+        AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+      }, 100);
     }
   };
 
@@ -105,35 +125,112 @@ export default function DetalleLocal() {
     );
 
   return (
-    <View style={GlobalStyles.container}>
-      <Text style={GlobalStyles.tittle}>{local.nombre}</Text>
+    <View
+      style={GlobalStyles.container}
+      accessibilityLabel={"Pantalla informativa del local " + local.nombre}
+      accessibilityHint={"Desliza hacia abajo o usa el rotor para navegar por toda la informacion del local " + local.nombre}
+    >
+      <Text
+        style={GlobalStyles.tittle}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        {local.nombre}
+      </Text>
 
-      <Text style={styles.sectionTitle}>Horarios</Text>
+      <Text
+        style={GlobalStyles.tittleMarginVertical}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        Horarios
+      </Text>
 
-      <View style={{ marginBottom: 32 }}>
-        {local.horarios && local.horarios.length > 0 ? (
-          local.horarios.map((h, index) => (
-            <Text key={index} style={styles.horarioText}>
-              {h.dia}: {h.horario_apertura.substring(0, 5)}hs a{" "}
-              {h.horario_cierre.substring(0, 5)}hs
+      <TouchableOpacity
+        onPress={handleSkipListHorarios}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel="Saltar lista de Horarios"
+        accessibilityHint="Salta directamente a la lista de Menús"
+        style={{
+          height: 1,
+        }}
+      >
+        <Text>Saltar lista</Text>
+      </TouchableOpacity>
+
+      <View style={{ marginBottom: 15 }}>
+        <FlatList
+          data={Array.isArray(local.horarios) ? local.horarios : []}
+          keyExtractor={(_, index) => index.toString()}
+          showsVerticalScrollIndicator={false}
+          accessibilityRole="list"
+          accessibilityLabel={`Lista de horarios del local ${local.nombre}`}
+          scrollEnabled={false} // evita que haya scroll dentro de la lista
+          ListEmptyComponent={
+            <Text
+              style={styles.horarioText}
+              accessible
+              accessibilityRole="text"
+              accessibilityLabel="Horarios no disponibles"
+            >
+              Horarios no disponibles
             </Text>
-          ))
-        ) : (
-          <Text style={styles.horarioText}>Horarios no disponibles</Text>
-        )}
+          }
+          renderItem={({ item }) => (
+            <Text
+              style={styles.horarioText}
+              accessible
+              accessibilityRole="text"
+              accessibilityLabel={`${item.dia}: de ${item.horario_apertura?.substring(0, 5)} a ${item.horario_cierre?.substring(0, 5)}`}
+            >
+              {item.dia}: {item.horario_apertura?.substring(0, 5)}hs a{" "}
+              {item.horario_cierre?.substring(0, 5)}hs
+            </Text>
+          )}
+        />
       </View>
 
+
       <View style={styles.containerMenus}>
-        <Text style={styles.sectionTitle}>Menús</Text>
-        <Text style={styles.menuSubtitle}>Haga clic para más información</Text>
+        <Text
+          style={styles.sectionTitle}
+          accessibilityElementsHidden={true}
+          importantForAccessibility="no"
+        >
+          Menús
+        </Text>
+        <Text
+          style={GlobalStyles.subtitle}
+          accessibilityElementsHidden={true}
+          importantForAccessibility="no"
+        >
+          Haga clic para más información
+        </Text>
+
+        <TouchableOpacity
+          onPress={handleSkipList}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Saltar lista de Menús"
+          accessibilityHint="Salta directamente al botón notificar cumplimiento"
+          style={{
+            height: 1,
+          }}
+        >
+          <Text>Saltar lista</Text>
+        </TouchableOpacity>
 
         <FlatList
           data={menus}
+          showsVerticalScrollIndicator={false}
+          accessibilityRole="list"
+          accessibilityLabel={`Lista de Menús del local ${local.nombre}`}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <CardButton
               name={item.nombre}
-              onPress={() => router.push(`/local/${item.id}`)}
+              onPress={() => router.push(`/menu/${item.id}`)}
               accessibilityHintText=""
               width={"100%"}
             />
@@ -146,7 +243,8 @@ export default function DetalleLocal() {
           label="Notificar Cumplimiento"
           onPress={() => setShowModal(true)}
           type="primary"
-          accessibilityHint="Acceptar la creacion del plato"
+          accessibilityHint={`Abre una ventana para notificar si el local ${local.nombre} cumple con tener menú accesible`}
+          ref={notificarRef}
         />
       </View>
 
@@ -154,34 +252,51 @@ export default function DetalleLocal() {
         animationType="fade"
         transparent={true}
         visible={showModal}
-        onRequestClose={() => setShowModal(false)}
+        onRequestClose={() => setShowModal(false)} // 🔹 cierra con botón “Atrás”
+        accessible
+        accessibilityViewIsModal
       >
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Notificar cumplimiento</Text>
-            <Text style={styles.modalQuestion}>
-              ¿El local cumple con tener el menú en braille y/o el QR?
+        <TouchableOpacity
+          style={styles.modalBackground}
+          activeOpacity={1}
+          onPressOut={() => setShowModal(false)} // 🔹 cierra al tocar fuera
+          accessibilityHint="Selecciona una de las opciones para continuar o toca fuera de la ventana para cerrarla"
+          accessibilityLabel="Cerrar la ventana de confirmación de notificación de cumplimiento"
+        >
+          <View
+            style={styles.modalContainer}
+            accessibilityLabel="Ventana de confirmación de notificación de cumplimiento"
+          >
+            <Text
+              style={styles.modalTitle}
+            >
+              Notificar cumplimiento
             </Text>
 
-            <TouchableOpacity
-              style={[styles.modalAction, styles.modalCumple]}
-              onPress={() => notificarCumplimiento(true)}
+            <Text
+              style={styles.modalQuestion}
+              accessible
+              accessibilityRole="text"
             >
-              <Text style={[styles.modalActionText, { color: "white" }]}>
-                Cumple
-              </Text>
-            </TouchableOpacity>
+              ¿El local {local.nombre} cumple con tener el menú en braille y/o el QR?
+            </Text>
 
-            <TouchableOpacity
-              style={[styles.modalAction, styles.modalNoCumple]}
-              onPress={() => notificarCumplimiento(false)}
-            >
-              <Text style={[styles.modalActionText, { color: "#333" }]}>
-                No Cumple
-              </Text>
-            </TouchableOpacity>
+            <View style={GlobalStyles.containerButton}>
+              <CustomButton
+                label="Cumple"
+                onPress={() => notificarCumplimiento(true)}
+                type="primary"
+                accessibilityHint={`Notificar que el local ${local.nombre} tiene el menú en braille y/o el QR`}
+              />
+              <CustomButton
+                label="Cancelar"
+                onPress={() => notificarCumplimiento(false)}
+                type="secondary"
+                accessibilityHint={`Notificar que el local ${local.nombre} no tiene el menú en braille y/o el QR`}
+              />
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </Modal>
     </View>
   );
@@ -205,14 +320,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 24,
   },
-  menuSubtitle: {
-    fontSize: 14,
-    color: "#888",
-    textAlign: "center",
-    marginBottom: 25,
-  },
   containerMenus: {
-    height: "65%",
+    height: "60%",
     marginBottom: 20,
     borderTopColor: Colors.text,
     borderTopWidth: 2,
@@ -228,52 +337,29 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    paddingHorizontal: 17,
+    backgroundColor: "rgba(0,0,0,0.2)", // Fondo con blur leve
   },
-  modalContent: {
-    width: "85%",
-    backgroundColor: "white",
-    borderRadius: 20,
-    padding: 25,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+  modalContainer: {
+    backgroundColor: Colors.background,
+    borderRadius: 24,
+    paddingVertical: 44,
   },
   modalTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 10,
+    fontFamily: "Poppins",
+    fontWeight: "700",
+    fontSize: 27,
+    color: "#273431",
     textAlign: "center",
-    color: "#333",
+    marginBottom: 32,
   },
   modalQuestion: {
-    fontSize: 16,
-    color: "#555",
+    fontFamily: "Inter",
+    fontWeight: "500",
+    fontSize: 20,
+    color: "#242424",
     textAlign: "center",
-    marginBottom: 25,
     lineHeight: 24,
-  },
-  modalAction: {
-    width: "100%",
-    paddingVertical: 15,
-    borderRadius: 30,
-    alignItems: "center",
-    marginTop: 15,
-  },
-  modalCumple: {
-    backgroundColor: "#07bcb3",
-  },
-  modalNoCumple: {
-    backgroundColor: "#f4f4f4",
-    borderWidth: 1,
-    borderColor: "#ddd",
-  },
-  modalActionText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "white",
+    marginBottom: 32,
   },
 });

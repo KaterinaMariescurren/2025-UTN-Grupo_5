@@ -1,14 +1,6 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  Platform,
-  KeyboardAvoidingView,
-} from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text, FlatList, TouchableOpacity, findNodeHandle, AccessibilityInfo } from "react-native";
 import { useRouter } from "expo-router";
-import { Colors } from "@/constants/Colors";
 import CardButton from "@/components/CardButton";
 import { GlobalStyles } from "@/constants/GlobalStyles";
 import CustomButton from "@/components/CustomButton";
@@ -18,14 +10,16 @@ const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export default function TipoRestaurantes() {
   const [tipos, setTipos] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
+
+  const allRestaurantsButtonRef = useRef(null);
 
   useEffect(() => {
     fetch(`${BACKEND_URL}tipos_local/`)
-      .then((res) => res.json())
-      .then((data) => setTipos(data))
-      .catch((err) => console.error(err));
+      .then(res => res.json())
+      .then(data => setTipos(data))
+      .catch(err => console.error(err));
   }, []);
 
   const handleTypePress = (id: number) => {
@@ -36,127 +30,83 @@ export default function TipoRestaurantes() {
     router.push(`/restaurantes/all`);
   };
 
-  const filteredTipos = tipos.filter((item) =>
+  const filteredTipos = tipos.filter(item =>
     item.nombre.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleSkipList = () => {
+    const nodeHandle = findNodeHandle(allRestaurantsButtonRef.current);
+    if (nodeHandle) {
+      setTimeout(() => {
+        AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+      }, 100);
+    }
+  };
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <View
       style={GlobalStyles.container}
+      accessibilityLabel="Pantalla de selección de tipos de restaurantes"
+      accessibilityHint="Desliza hacia abajo o usa el rotor para navegar por los tipos de restaurantes disponibles."
     >
+      <Text
+        style={GlobalStyles.tittleMarginVertical}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        Tipo de Restaurantes
+      </Text>
+      <Text
+        style={GlobalStyles.subtitle}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        Haga clic para más información
+      </Text>
+
+      <Buscardor
+        value={searchTerm}
+        onChangeText={setSearchTerm}
+        placeholder="Buscar tipos de restaurantes..."
+        accessibilityLabel="Buscar tipos de restaurantes"
+      />
+
+      <TouchableOpacity
+        onPress={handleSkipList}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel="Saltar lista de tipos de restaurantes"
+        accessibilityHint="Salta directamente al botón Todos los restaurantes"
+        style={{
+          height: 1,
+        }}
+      >
+        <Text>Saltar lista</Text>
+      </TouchableOpacity>
       <FlatList
         data={filteredTipos}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={item => item.id.toString()}
+        showsVerticalScrollIndicator={false}
+        accessibilityRole="list"
+        accessibilityLabel="Lista de tipos de restaurantes disponibles"
         renderItem={({ item }) => (
           <CardButton
             name={item.nombre}
             onPress={() => handleTypePress(item.id)}
-            accessibilityHintText={
-              "Toca para ver las diferentes categorías del menu " + item.nombre
-            }
+            accessibilityHintText={"Toca para ver los diferentes locales del tipo" + item.nombre}
             width={"100%"}
           />
         )}
-        ListHeaderComponent={
-          <>
-            <Text style={GlobalStyles.tittleCliente}>Tipo de Restaurantes</Text>
-            <Text style={GlobalStyles.subtitle}>
-              Haga clic para más información
-            </Text>
-            <Buscardor
-              value={searchTerm}
-              onChangeText={setSearchTerm}
-              placeholder="Buscar restaurantes..."
-              accessibilityLabel="Buscar restaurantes"
-            />
-          </>
-        }
-        ListFooterComponent={
-          <View style={GlobalStyles.containerButton}>
-            <CustomButton
-              label="Todos los restaurantes"
-              onPress={handleAllRestaurants}
-              type="primary"
-              accessibilityHint="Muestra todos los restaurantes"
-            />
-          </View>
-        }
       />
-    </KeyboardAvoidingView>
+      <View style={GlobalStyles.containerButton}>
+        <CustomButton
+          label="Todos los restaurantes"
+          onPress={handleAllRestaurants}
+          type="primary"
+          accessibilityHint="Muestra todos los restaurantes"
+          ref={allRestaurantsButtonRef}
+        />
+      </View>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    backgroundColor: Colors.background,
-  },
-
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    textAlign: "center",
-    marginTop: 10,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#888",
-    textAlign: "center",
-    marginBottom: 20,
-  },
-
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f9f9f9",
-    borderRadius: 25,
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#eee",
-  },
-  searchInput: { flex: 1, fontSize: 16 },
-
-  card: {
-    backgroundColor: "#DCF0F0",
-    paddingVertical: 18,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    marginHorizontal: 12,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  cardText: {
-    fontSize: 18,
-    color: "#242424",
-    fontWeight: "600",
-  },
-
-  allRestaurantsButton: {
-    backgroundColor: "#07bcb3",
-    paddingVertical: 15,
-    borderRadius: 30,
-    marginBottom: 30,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  allRestaurantsText: {
-    fontSize: 18,
-    color: "#fff",
-    fontWeight: "bold",
-  },
-});
