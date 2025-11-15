@@ -4,10 +4,13 @@ import CustomModal from "@/components/CustomModal";
 import { Colors } from "@/constants/Colors";
 import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useAuth } from "@/contexts/authContext";
+import { Ionicons } from "@expo/vector-icons";
+import * as FileSystem from "expo-file-system/legacy";
+import * as MediaLibrary from "expo-media-library";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useApi } from "@/utils/api";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useState, useRef } from "react";
+import React, { useCallback, useState, useRef, useEffect } from "react";
 import {
   AccessibilityInfo,
   Alert,
@@ -34,7 +37,7 @@ export default function MenusScreen() {
   const { apiFetch } = useApi();
 
   const botonesRef = useRef(null);
-  
+
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
@@ -68,9 +71,51 @@ export default function MenusScreen() {
     }, [accessToken, apiFetch, router])
   );
 
+  useEffect(() => {
+    (async () => {
+      const { status } = await MediaLibrary.requestPermissionsAsync(true);
+      if (status !== "granted") {
+        Alert.alert(
+          "Permiso requerido",
+          "Necesitás otorgar permiso para guardar imágenes en la galería."
+        );
+      } else {
+        console.log("✅ Permiso concedido para MediaLibrary");
+      }
+    })();
+  }, []);
+
   const abrirModal = (menu: Menu) => {
     setMenuBorrar(menu);
     setModalVisible(true);
+  };
+
+  const handleDescargarQR = async (menuId: number) => {
+    try {
+      const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL;
+      const qrUrl = `${BACKEND_URL}qr/menu/${menuId}?download=true`;
+      const localPath =
+        (FileSystem as any).documentDirectory + `menu_${menuId}_qr.png`;
+
+      console.log("🔗 Descargando QR:", qrUrl);
+      const { uri, status } = await FileSystem.downloadAsync(qrUrl, localPath);
+
+      if (status !== 200) {
+        Alert.alert("Error", `No se pudo descargar el QR (status ${status})`);
+        return;
+      }
+
+      const fileInfo = await FileSystem.getInfoAsync(uri);
+      if (!fileInfo.exists) {
+        Alert.alert("Error", "El archivo descargado no existe.");
+        return;
+      }
+
+      const asset = await MediaLibrary.createAssetAsync(uri);
+      await MediaLibrary.createAlbumAsync("BeYourEyes_QR", asset, false);
+
+    } catch (error) {
+    }
   };
 
   const handleEliminarMenu = async () => {
@@ -153,6 +198,7 @@ export default function MenusScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Descargar menú"
                 accessibilityHint="Toca para descargar el menú"
+                onPress={() => handleDescargarQR(item.id)}
               >
                 <MaterialIcons
                   name="file-download"
@@ -200,7 +246,7 @@ export default function MenusScreen() {
         }}
         onAccept={() => handleEliminarMenu()}
       />
-    </View>
+    </View >
   );
 }
 
