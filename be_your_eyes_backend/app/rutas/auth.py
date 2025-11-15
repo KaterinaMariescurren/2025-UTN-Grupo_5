@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException
 from app.bd.sesion import get_db
 from app.modelos.local import Local
 from app.modelos.usuario import Usuario
+from app.modelos.persona import Persona
 from ..esquemas.usuario import UsuarioCrear, UsuarioLogin
 from ..crud.local import registrar_local
 from ..crud.persona import registrar_persona
@@ -61,3 +62,16 @@ def obtener_tipo_usuario(user_data: dict = Depends(verificar_token), db: Session
     return {"tipo": tipo_usuario,
             "id": usuario.id}
 
+@router.get("/me/persona_id")
+def obtener_persona_id(user_data: dict = Depends(verificar_token),db: Session = Depends(get_db)):  
+    # Buscar el usuario en la BD usando el email del token
+    usuario = db.query(Usuario).filter(Usuario.email == user_data["email"]).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    # Verificar que tenga una persona asociada
+    persona = db.query(Persona).filter(Persona.usuario_id == usuario.id).first()
+    if not persona:
+        raise HTTPException(status_code=404, detail="El usuario no tiene persona asociada")
+
+    return {"persona_id": persona.id}
