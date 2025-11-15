@@ -18,6 +18,7 @@ class PersonaActualizar(BaseModel):
     nombre: Optional[str] = None
     email: Optional[EmailStr] = None
     contrasenia: Optional[str] = None
+    contrasenia_actual: Optional[str] = None 
     tipo: Optional[str] = None
 
 class PersonaRespuesta(PersonaBase):

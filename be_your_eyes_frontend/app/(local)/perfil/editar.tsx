@@ -31,7 +31,7 @@ export default function EditarPerfilLocalScreen() {
     const [localData, setLocalData] = useState<any>(null);
     const [form, setForm] = useState({
         nombre: "",
-        email: "",
+        email: "",  
         telefono: "",
         calle: "",
         altura: "",
@@ -64,7 +64,7 @@ export default function EditarPerfilLocalScreen() {
 
                     setForm({
                         nombre: data.nombre ?? "",
-                        email: data.email ?? "",
+                        email: data.email ?? "", 
                         telefono: data.telefono ?? "",
                         calle: data.direccion?.calle ?? "",
                         altura: data.direccion?.altura?.toString() ?? "",
@@ -101,7 +101,7 @@ export default function EditarPerfilLocalScreen() {
         try {
             const body = {
                 nombre: form.nombre,
-                email: form.email,
+                email: form.email, 
                 telefono: form.telefono,
                 direccion: {
                     calle: form.calle,
@@ -121,7 +121,7 @@ export default function EditarPerfilLocalScreen() {
 
             if (!res.ok) throw new Error("Error al actualizar el local");
             Alert.alert("✅ Éxito", "Los datos se actualizaron correctamente");
-            router.replace("/(perfil)");
+            router.replace("/perfil");
         } catch (error) {
             console.error("Error al guardar cambios:", error);
             Alert.alert("❌ Error", "No se pudieron guardar los cambios");
