@@ -8,6 +8,6 @@ class Plato(Base):
     nombre = Column(String, nullable=False)
     descripcion = Column(String, nullable=True)
     precio = Column(Float, nullable=False)
-    categoria_id = Column(Integer, ForeignKey("categoria.id"), nullable=False)
+    menu_categoria_id = Column(Integer, ForeignKey("menu_categoria.id"), nullable=False)
 
-    categoria = relationship("Categoria", back_populates="platos")
+    menu_categoria = relationship("MenuCategoria", back_populates="platos")

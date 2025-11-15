@@ -1,11 +1,20 @@
+import CardButton from "@/components/CardButton";
+import CustomButton from "@/components/CustomButton";
+import CustomModal from "@/components/CustomModal";
+import { Colors } from "@/constants/Colors";
+import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useAuth } from "@/contexts/authContext";
 import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system/legacy";
 import * as MediaLibrary from "expo-media-library";
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useApi } from "@/utils/api";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useState, useRef, useEffect } from "react";
 import {
+  AccessibilityInfo,
   Alert,
+  findNodeHandle,
   FlatList,
   StyleSheet,
   Text,
@@ -19,15 +28,52 @@ type Menu = {
 };
 
 export default function MenusScreen() {
-  const { accessToken, logout } = useAuth();
+  const { accessToken } = useAuth();
   const [localId, setLocalId] = useState<number | null>(null);
   const [menus, setMenus] = useState<Menu[]>([]);
   const router = useRouter();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [menuBorrar, setMenuBorrar] = useState<Menu | null>(null);
+  const { apiFetch } = useApi();
 
-  // 🔐 Permisos de galería
+  const botonesRef = useRef(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        if (!accessToken) return;
+
+        try {
+          // 1️⃣ Obtener localId
+          const resLocal = await apiFetch(
+            `${process.env.EXPO_PUBLIC_API_URL}me/local_id`
+          );
+          const dataLocal = await resLocal.json();
+          setLocalId(dataLocal.local_id);
+
+          // 2️⃣ Obtener menús
+          const resMenus = await apiFetch(
+            `${process.env.EXPO_PUBLIC_API_URL}menus/local/${dataLocal.local_id}`
+          );
+          const dataMenus = await resMenus.json();
+          setMenus(dataMenus);
+        } catch (error) {
+          console.error("Error al obtener datos:", error);
+          Alert.alert(
+            "Error",
+            "No se pudieron obtener los datos. Por favor, logueate nuevamente."
+          );
+          router.replace("/login");
+        }
+      };
+
+      fetchData();
+    }, [accessToken, apiFetch, router])
+  );
+
   useEffect(() => {
     (async () => {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
+      const { status } = await MediaLibrary.requestPermissionsAsync(true);
       if (status !== "granted") {
         Alert.alert(
           "Permiso requerido",
@@ -39,79 +85,11 @@ export default function MenusScreen() {
     })();
   }, []);
 
-  // 🏪 Obtener ID del local
-  useEffect(() => {
-    const fetchLocalId = async () => {
-      try {
-        const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}me/local_id`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-
-        if (res.status === 401) {
-          router.replace("/login");
-          return;
-        }
-
-        const data = await res.json();
-        setLocalId(data.local_id);
-      } catch (error) {
-        console.error("Error al obtener localId:", error);
-        Alert.alert(
-          "Error",
-          "No se pudo obtener el local. Por favor, logueate nuevamente."
-        );
-        router.replace("/login");
-      }
-    };
-
-    fetchLocalId();
-  }, [accessToken, router]);
-
-  // 📋 Obtener menús del local
-  useEffect(() => {
-    if (!localId) return;
-    const fetchMenus = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL}menus/local/${localId}`,
-          { headers: { Authorization: `Bearer ${accessToken}` } }
-        );
-        const data = await res.json();
-        setMenus(data);
-      } catch (error) {
-        console.error("Error al obtener menus:", error);
-      }
-    };
-    fetchMenus();
-  }, [accessToken, localId]);
-
-  // 🗑️ Eliminar menú
-  const handleEliminarMenu = async (menuId: number) => {
-    Alert.alert(
-      "Eliminar Menú",
-      "¿Estás seguro de que quieres eliminar este menú?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Eliminar",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await fetch(`${process.env.EXPO_PUBLIC_API_URL}menus/${menuId}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${accessToken}` },
-              });
-              setMenus(menus.filter((m) => m.id !== menuId));
-            } catch (error) {
-              console.error("Error al eliminar menú:", error);
-            }
-          },
-        },
-      ]
-    );
+  const abrirModal = (menu: Menu) => {
+    setMenuBorrar(menu);
+    setModalVisible(true);
   };
 
-  // 📲 Descargar QR del menú
   const handleDescargarQR = async (menuId: number) => {
     try {
       const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -136,109 +114,146 @@ export default function MenusScreen() {
       const asset = await MediaLibrary.createAssetAsync(uri);
       await MediaLibrary.createAlbumAsync("BeYourEyes_QR", asset, false);
 
-      Alert.alert("Listo ✅", "El QR del menú fue guardado en tu galería.");
     } catch (error) {
-      console.error("❌ Error al descargar QR:", error);
-      Alert.alert("Error", "No se pudo guardar el QR.");
     }
   };
 
-  // 🔓 Cerrar sesión
-  const handleLogout = () => {
-    logout();
-    router.replace("/login");
+  const handleEliminarMenu = async () => {
+    try {
+      await fetch(`${process.env.EXPO_PUBLIC_API_URL}menus/${menuBorrar?.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      // Actualizar la lista local
+      setMenus(menus.filter((m) => m.id !== menuBorrar?.id));
+      setModalVisible(false);
+      setMenuBorrar(null);
+    } catch (error) {
+      console.error("Error al eliminar menú:", error);
+    }
+  };
+
+  const handleSkipList = () => {
+    const nodeHandle = findNodeHandle(botonesRef.current);
+    if (nodeHandle) {
+      setTimeout(() => {
+        AccessibilityInfo.setAccessibilityFocus(nodeHandle);
+      }, 100);
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Ionicons name="power" size={28} color="white" />
+    <View
+      style={GlobalStyles.container}
+      accessibilityLabel="Pantalla de Menús"
+    >
+      <Text
+        style={GlobalStyles.tittle}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        Menús
+      </Text>
+      <TouchableOpacity
+        onPress={handleSkipList}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel="Saltar lista de Menús"
+        accessibilityHint="Salta directamente al botón nuevo Menús"
+        style={{
+          height: 1,
+        }}
+      >
+        <Text>Saltar lista</Text>
       </TouchableOpacity>
-      <Text style={styles.tittle}>MENÚS</Text>
-
       <FlatList
         data={menus}
         keyExtractor={(item) => item.id.toString()}
+        showsVerticalScrollIndicator={false}
+        accessibilityRole="list"
+        accessibilityLabel="Lista de Menús"
         renderItem={({ item }) => (
-          <View style={styles.menuItem}>
-            <TouchableOpacity
-              style={{ flex: 1 }}
-              onPress={() =>
-                router.push(`/(local)/categorias?menuId=${item.id}`)
-              }
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+              marginBottom: 10,
+            }}
+          >
+            <CardButton
+              name={item.nombre}
+              onPress={() => router.push(`/(local)/categorias?menuId=${item.id}&menuName=${item.nombre}`)}
+              accessibilityHintText={"Toca para ver las categorías del Menú " + item.nombre}
+            />
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+              }}
             >
-              <Text style={styles.itemtext}>{item.nombre}</Text>
-            </TouchableOpacity>
-
-            {/* 🟢 Botón QR */}
-            <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: "#4CAF50" }]}
-              onPress={() => handleDescargarQR(item.id)}
-            >
-              <Text style={styles.actionText}>QR</Text>
-            </TouchableOpacity>
-
-            {/* 🔴 Botón Eliminar */}
-            <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: "#ff4d4f" }]}
-              onPress={() => handleEliminarMenu(item.id)}
-            >
-              <Text style={styles.actionText}>Eliminar</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel="Descargar menú"
+                accessibilityHint="Toca para descargar el menú"
+                onPress={() => handleDescargarQR(item.id)}
+              >
+                <MaterialIcons
+                  name="file-download"
+                  size={24}
+                  color={Colors.text}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel="Eliminar menú"
+                accessibilityHint={
+                  "Toca para abrir la opcion para eliminar el menú" +
+                  item.nombre
+                }
+                onPress={() => abrirModal(item)}
+              >
+                <MaterialIcons name="delete" size={24} color={Colors.cta} />
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       />
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push(`/(local)/nuevoMenu?localId=${localId}`)}
-      >
-        <Text style={styles.buttontext}>Crear Menú</Text>
-      </TouchableOpacity>
-    </View>
+      <View style={GlobalStyles.containerButton}>
+        <CustomButton
+          label="Nuevo Menú"
+          onPress={() => router.push(`/(local)/nuevoMenu?localId=${localId}`)}
+          type="primary"
+          accessibilityHint="Abre la pantalla para crear un nuevo menú"
+          ref={botonesRef}
+        />
+        <CustomButton
+          label="Centros de impresion"
+          onPress={() => router.push(`/(local)/puntosImpresion`)}
+          type="secondary"
+          accessibilityHint="Abre la pantalla para buscar los centros de impresion"
+        />
+      </View>
+      <CustomModal
+        visible={modalVisible}
+        nombre={"el menú " + menuBorrar?.nombre}
+        onCancel={() => {
+          setModalVisible(false);
+          setMenuBorrar(null);
+        }}
+        onAccept={() => handleEliminarMenu()}
+      />
+    </View >
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#50C2C9" },
-  tittle: {
-    paddingTop: 150,
-    fontSize: 36,
-    color: "#FFFFFF",
-    fontWeight: "700",
-    marginBottom: 47,
-    textAlign: "center",
+  itemtext: {
+    fontSize: 24,
+    fontWeight: 600,
+    color: "#000000",
   },
-  menuItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    height: 60,
-    padding: 15,
-    marginVertical: 10,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 8,
-  },
-  itemtext: { fontSize: 24, fontWeight: "600", color: "#000000" },
-  actionButton: {
-    padding: 5,
-    marginLeft: 10,
-    borderRadius: 5,
-    width: 80,
-    alignItems: "center",
-  },
-  actionText: { color: "white", fontWeight: "500" },
-  button: {
-    backgroundColor: "#BFEAE4",
-    padding: 15,
-    borderRadius: 11,
-    alignItems: "center",
-    marginTop: 20,
-    height: 60,
-    justifyContent: "center",
-    width: "100%",
-    marginBottom: 30,
-  },
-  buttontext: { fontSize: 23, fontWeight: "600", color: "#000000" },
-  logoutButton: { position: "absolute", top: 70, right: 30, zIndex: 1 },
 });

@@ -1,26 +1,85 @@
+import CustomButton from "@/components/CustomButton";
+import CustomInput from "@/components/CustomInput";
+import { Colors } from "@/constants/Colors";
+import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useAuth } from "@/contexts/authContext";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
+  BackHandler,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 
 export default function LoginScreen() {
-  const router = useRouter();
-  const { login } = useAuth();
-
   const [email, setEmail] = useState("");
-  const [contrasenia, setContrasenia] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const router = useRouter();
+  const { login, accessToken } = useAuth();
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        router.replace("/");
+        return true;
+      };
+
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+
+      return () => subscription.remove();
+    }, [router])
+  );
+
+  useEffect(() => {
+    if (accessToken) {
+      const checkTipo = async () => {
+        try {
+          const response = await fetch(
+            `${process.env.EXPO_PUBLIC_API_URL}me/tipo`,
+            {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            }
+          );
+
+          if (!response.ok) throw new Error("Token inválido");
+
+          const data = await response.json();
+
+          // Redirige según tipo
+          switch (data.tipo) {
+            case "persona":
+              router.replace("/(cliente)/tiporestaurante");
+              break;
+            case "local":
+              router.replace("/(local)");
+              break;
+            case "admin":
+              router.replace("/(admin)");
+              break;
+            default:
+              break;
+          }
+        } catch (error) {
+          console.error("Error verificando token:", error);
+          // Si hay un problema, no hace nada (permite ver el login)
+        }
+      };
+
+      checkTipo();
+    }
+  }, [accessToken, router]);
+
   const handleLogin = async () => {
-    if (!email || !contrasenia) {
+    if (!email || !password) {
       Alert.alert("Error", "Completa todos los campos");
       return;
     }
@@ -28,23 +87,31 @@ export default function LoginScreen() {
     try {
       setLoading(true);
 
-      // 🚀 Cambia esta URL por la de tu backend
       const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, contrasenia }),
+        body: JSON.stringify({ email, contrasenia: password }),
       });
 
       if (!response.ok) {
         throw new Error("Credenciales inválidas");
       }
-
       const data = await response.json();
-
-      // Suponiendo que tu backend devuelve { token: "...", user: {...} }
       await login(data.access_token);
-
-      router.replace("/(local)"); // navega a home o la pantalla principal
+      console.log(data);
+      switch (data.tipo) {
+        case "persona":
+          router.replace("/(cliente)/tiporestaurante");
+          break;
+        case "local":
+          router.replace("/(local)");
+          break;
+        case "admin":
+          router.replace("/(admin)");
+          break;
+        default:
+          break;
+      }
     } catch (error: any) {
       Alert.alert("Error", error.message || "Error al iniciar sesión");
     } finally {
@@ -53,102 +120,95 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Hola,{"\n"}Vamos a Iniciar Sesión</Text>
+    <View
+      style={GlobalStyles.container}
+      accessible
+      accessibilityLabel="Pantalla de Iniciar sesión"
+    >
+      <View style={styles.titleContainer} accessible accessibilityRole="header">
+        <Text style={styles.titleBig}>Hola,</Text>
+        <Text style={styles.titleSmall}>Vamos a iniciar sesión</Text>
+      </View>
 
-      <View style={styles.inputContainer}>
-        <MaterialIcons
-          name="email"
-          size={24}
-          color="#273431"
-          style={styles.icon}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Correo"
-          placeholderTextColor="#273431" // Color del placeholder
+      <View style={GlobalStyles.containerInputs}>
+        <CustomInput
+          label="Email"
           value={email}
           onChangeText={setEmail}
-          autoCapitalize="none"
+          placeholder="Email"
           keyboardType="email-address"
+          accessibilityHint="Ingresa tu correo electrónico"
+        />
+        <CustomInput
+          label="Contraseña"
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Contraseña"
+          keyboardType="default"
+          secureTextEntry={!showPassword}
+          rightIconName={showPassword ? "visibility" : "visibility-off"}
+          rightIconAccessibilityLabel={
+            showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+          }
+          rightIconAccessibilityHint="Toca para alternar la visibilidad de la contraseña"
+          onRightIconPress={() => setShowPassword(!showPassword)}
         />
       </View>
 
-      {/* Contraseña input con icono */}
-      <View style={styles.inputContainer}>
-        <MaterialIcons
-          name="lock"
-          size={24}
-          color="#273431"
-          style={styles.icon}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Contraseña"
-          placeholderTextColor="#273431"
-          secureTextEntry
-          value={contrasenia}
-          onChangeText={setContrasenia}
+      <View style={GlobalStyles.containerButton}>
+        <CustomButton
+          label={loading ? "Ingresando..." : "Iniciar Sesión"}
+          type="primary"
+          onPress={handleLogin}
+          accessibilityHint="Abre la pantalla de inicio de sesión"
         />
       </View>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? "Ingresando..." : "Iniciar Sesión"}
-        </Text>
-      </TouchableOpacity>
+
+      <View style={styles.registerContainer}>
+        <Text style={styles.registerText}>¿No tenés cuenta? </Text>
+        <TouchableOpacity
+          onPress={() => router.push("/register")}
+          accessibilityRole="link"
+          accessibilityLabel="Registrate"
+          accessibilityHint="Toca para ir a la pantalla de registro"
+        >
+          <Text style={styles.registerLink}>Registrate</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 20,
-    backgroundColor: "#FFFFFF",
+  titleContainer: {
+    alignItems: "center",
+    marginBottom: 40,
   },
-  title: {
+  titleBig: {
+    fontSize: 40,
+    fontWeight: "700",
+    color: "#273431",
+    textAlign: "center",
+  },
+  titleSmall: {
     fontSize: 32,
-    fontWeight: 700,
-    marginBottom: 49,
-    color: "#273431",
+    fontWeight: "400",
+    color: Colors.text,
+    textAlign: "center",
+    marginTop: 4,
   },
-  inputContainer: {
+  registerContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#BFEAE4",
-    borderWidth: 1,
-    borderColor: "#BDC3C7",
-    borderRadius: 8,
-    marginBottom: 34,
-    height: 60,
+    justifyContent: "center",
+    marginTop: 24,
   },
-  icon: {
-    padding: 10,
-  },
-
-  input: {
-    flex: 1,
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    color: "#273431",
+  registerText: {
     fontSize: 16,
+    color: Colors.text,
   },
-  button: {
-    backgroundColor: "#BFEAE4",
-    padding: 15,
-    borderRadius: 8,
-    height: 60,
-    alignItems: "center",
-    marginTop: 60,
-  },
-  buttonText: {
-    color: "#230808",
-    fontWeight: 600,
-    fontSize: 23,
+  registerLink: {
+    fontSize: 16,
+    color: Colors.cta,
+    textDecorationLine: "underline",
   },
 });

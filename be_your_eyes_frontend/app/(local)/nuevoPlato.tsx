@@ -1,16 +1,20 @@
-import { useAuth } from "@/contexts/authContext";
+import CustomButton from "@/components/CustomButton";
+import CustomInput from "@/components/CustomInput";
+import { GlobalStyles } from "@/constants/GlobalStyles";
+import { useApi } from "@/utils/api";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   Text,
-  TextInput,
-  TouchableOpacity,
   View
 } from "react-native";
 
 export default function NuevoPlatoScreen() {
-  const { accessToken } = useAuth();
+  const { apiFetch } = useApi();
   const { menuId, categoriaId } = useLocalSearchParams<{
     menuId: string;
     categoriaId: string;
@@ -28,7 +32,7 @@ export default function NuevoPlatoScreen() {
     }
 
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `${process.env.EXPO_PUBLIC_API_URL}menus/${menuId}/categorias/${categoriaId}/platos`,
         {
           method: "POST",
@@ -43,18 +47,12 @@ export default function NuevoPlatoScreen() {
         }
       );
 
-      if (res.status === 401) {
-        router.replace("/login");
-        return;
-      }
-
       const data = await res.json();
 
       if (!res.ok) {
         throw new Error(data.detail || "Error al crear el plato");
       }
 
-      Alert.alert("Éxito", "Plato creado correctamente");
       router.back(); // vuelve a la pantalla de platos
     } catch (error: any) {
       console.error(error);
@@ -63,102 +61,59 @@ export default function NuevoPlatoScreen() {
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        padding: 20,
-        justifyContent: "center",
-        backgroundColor: "#50C2C9",
-      }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={GlobalStyles.container}
+      accessibilityLabel="Pantalla de creacion de un nuevo plato"
     >
-      <Text
-        style={{
-          fontSize: 36,
-          color: "#FFFFFF",
-          fontWeight: "bold",
-          marginBottom: 30,
-          textAlign: "center",
-        }}
-      >
-        Nuevo Plato
-      </Text>
-
-      <TextInput
-        value={nombre}
-        onChangeText={setNombre}
-        placeholder="Nombre del plato"
-        placeholderTextColor={"#273431"}
-        style={{
-          backgroundColor: "#FFFFFF",
-          borderWidth: 1,
-          borderColor: "#ccc",
-          padding: 15,
-          borderRadius: 11,
-          marginVertical: 30,
-          height: 60,
-          fontSize: 16,
-        }}
-      />
-
-      <TextInput
-        value={descripcion}
-        onChangeText={setDescripcion}
-        placeholder="Descripción"
-        placeholderTextColor={"#273431"}
-        style={{
-          backgroundColor: "#FFFFFF",
-          borderWidth: 1,
-          borderColor: "#ccc",
-          padding: 15,
-          borderRadius: 11,
-          marginVertical: 30,
-          height: 60,
-          fontSize: 16,
-        }}
-      />
-
-      <TextInput
-        value={precio}
-        onChangeText={setPrecio}
-        placeholder="Precio"
-        keyboardType="numeric"
-        placeholderTextColor={"#273431"}
-        style={{
-          backgroundColor: "#FFFFFF",
-          borderWidth: 1,
-          borderColor: "#ccc",
-          padding: 15,
-          borderRadius: 11,
-          marginVertical: 30,
-          height: 60,
-          fontSize: 16,
-        }}
-      />
-
-      <TouchableOpacity
-        style={{
-          backgroundColor: "#BFEAE4",
-          padding: 15,
-          borderRadius: 11,
-          alignItems: "center",
-          marginTop: 20,
-          height: 60,
-          justifyContent: "center",
-          width: "100%",
-          marginBottom: 30,
-        }}
-        onPress={handleCrearPlato}
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+        keyboardShouldPersistTaps="handled"
       >
         <Text
-          style={{
-            fontSize: 23,
-            fontWeight: 600,
-            color: "#000000",
-          }}
+          style={GlobalStyles.tittle}
+          accessibilityElementsHidden={true}
+          importantForAccessibility="no"
         >
-          Crear Plato
+          Nuevo Plato
         </Text>
-      </TouchableOpacity>
-    </View>
+        <View style={GlobalStyles.containerInputs}>
+          <CustomInput
+            label="Nombre del plato"
+            value={nombre}
+            onChangeText={setNombre}
+            placeholder="Ingrese nombre"
+            keyboardType="default"
+            accessibilityHint="Ingresa el nombre del plato"
+          />
+          <CustomInput
+            label="Descripción del plato"
+            value={descripcion}
+            onChangeText={setDescripcion}
+            placeholder="Ingrese la descripción"
+            keyboardType="default"
+            multiline
+            minHeight={80}
+            accessibilityHint="Ingresa la descripción del plato"
+          />
+          <CustomInput
+            label="Precio del plato"
+            value={precio}
+            onChangeText={setPrecio}
+            placeholder="Ingrese el precio"
+            keyboardType="numeric"
+            accessibilityHint="Ingresa el precio del plato"
+          />
+        </View>
+        <View style={GlobalStyles.containerButton}>
+          <CustomButton
+            label="Acceptar"
+            onPress={handleCrearPlato}
+            type="primary"
+            accessibilityHint="Acceptar la creacion del plato"
+          />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

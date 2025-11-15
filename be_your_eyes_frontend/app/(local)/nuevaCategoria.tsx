@@ -1,10 +1,14 @@
+import CustomButton from "@/components/CustomButton";
+import CustomInput from "@/components/CustomInput";
+import { GlobalStyles } from "@/constants/GlobalStyles";
 import { useAuth } from "@/contexts/authContext";
+import { useApi } from "@/utils/api";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function NuevaCategoriaScreen() {
-  const { accessToken } = useAuth();
+  const { apiFetch } = useApi();
   const router = useRouter();
   const { menuId } = useLocalSearchParams<{ menuId: string }>(); // obtener menuId desde la URL
 
@@ -17,7 +21,7 @@ export default function NuevaCategoriaScreen() {
     }
 
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `${process.env.EXPO_PUBLIC_API_URL}menus/${menuId}/categorias/`,
         {
           method: "POST",
@@ -34,7 +38,6 @@ export default function NuevaCategoriaScreen() {
         throw new Error(data.detail || "Error al crear la categoría");
       }
 
-      Alert.alert("Éxito", data.mensaje || "Categoría creada correctamente");
       router.back(); // volver a la pantalla de categorías
     } catch (error: any) {
       console.error(error);
@@ -43,61 +46,35 @@ export default function NuevaCategoriaScreen() {
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        padding: 20,
-        justifyContent: "center",
-        backgroundColor: "#50C2C9",
-      }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={GlobalStyles.container}
+      accessibilityLabel="Pantalla de creacion de una nueva Categoría"
     >
       <Text
-        style={{
-          fontSize: 36,
-          color: "#FFFFFF",
-          fontWeight: "bold",
-          marginBottom: 30,
-          textAlign: "center",
-        }}
+        style={GlobalStyles.tittle}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
       >
         Nueva Categoría
       </Text>
 
-      <TextInput
+      <CustomInput
+        label="Nombre de la categoría"
         value={nombre}
         onChangeText={setNombre}
         placeholder="Ingrese nombre"
-        placeholderTextColor={"#273431"}
-        style={{
-          backgroundColor: "#FFFFFF",
-          borderWidth: 1,
-          borderColor: "#ccc",
-          padding: 15,
-          borderRadius: 11,
-          marginVertical: 30,
-          height: 60,
-          fontSize: 16,
-        }}
+        keyboardType="default"
+        accessibilityHint="Ingresa el nombre de la categoría"
       />
-
-      <TouchableOpacity
-        style={{
-          backgroundColor: "#BFEAE4",
-          padding: 15,
-          borderRadius: 11,
-          alignItems: "center",
-          marginTop: 20,
-          height: 60,
-          justifyContent: "center",
-          width: "100%",
-          marginBottom: 30,
-        }}
-        onPress={handleCrearCategoria}
-      >
-        <Text style={{ color: "#000000", fontWeight: "600", fontSize: 23 }}>
-          Crear Categoría
-        </Text>
-      </TouchableOpacity>
-    </View>
+      <View style={GlobalStyles.containerButton}>
+        <CustomButton
+          label="Acceptar"
+          onPress={handleCrearCategoria}
+          type="primary"
+          accessibilityHint="Acceptar la creacion de la categoria"
+        />
+      </View>
+    </KeyboardAvoidingView>
   );
 }

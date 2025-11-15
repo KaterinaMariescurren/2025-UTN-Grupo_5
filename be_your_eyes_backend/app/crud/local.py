@@ -4,6 +4,7 @@ from sqlalchemy import or_
 from app.crud.usuario import crear_usuario
 from app.modelos.direccion import Direccion
 from app.modelos.horario import Horario
+from app.modelos.menu import Menu
 from ..modelos.local import Local
 from ..esquemas.local import LocalCrear, LocalActualizar
 
@@ -53,8 +54,13 @@ def registrar_local(db: Session, usuario_data, local_data):
 def obtener_local(db: Session, local_id: int):
     return db.query(Local).filter(Local.id == local_id).first()
 
-def listar_locales(db: Session):
-    return db.query(Local).all()
+def listar_locales(db: Session, usuario: dict):
+    query = db.query(Local)
+
+    if usuario.get("tipo") != "admin":
+        query = query.filter(Local.habilitado == True)
+
+    return query.all()
 
 def actualizar_local(db: Session, local_id: int, local_data: LocalActualizar):
     db_local = db.query(Local).filter(Local.id == local_id).first()
@@ -68,14 +74,31 @@ def actualizar_local(db: Session, local_id: int, local_data: LocalActualizar):
     return db_local
 
 def eliminar_local(db: Session, local_id: int):
-    db_local = db.query(Local).filter(Local.id == local_id).first()
-    if db_local:
-        db.delete(db_local)
-        db.commit()
-    return db_local
+    local = db.query(Local).filter(Local.id == local_id).first()
+    if not local:
+        return None
 
-def buscar_locales(db: Session, nombre: str = None, tipo_local_id: int = None, direccion_id: int = None):
+    # Borrar dependencias
+    db.query(Horario).filter(Horario.local_id == local_id).delete()
+    db.query(Menu).filter(Menu.local_id == local_id).delete()
+
+    # Guardar el id del usuario antes de borrar el local
+    usuario_id = local.usuario_id
+
+    # Borrar el local
+    db.delete(local)
+
+    # Borrar el usuario asociado
+    eliminar_usuario(db, usuario_id)
+
+    db.commit()
+    return {"message": "Local y usuario eliminados correctamente"}
+
+
+def buscar_locales(db: Session, usuario: dict, nombre: str = None, tipo_local_id: int = None, direccion_id: int = None):
     query = db.query(Local)
+    if usuario.get("tipo") != "admin":
+        query = query.filter(Local.habilitado == True)
     if nombre:
         query = query.filter(Local.nombre.ilike(f"%{nombre}%"))
     if tipo_local_id:
@@ -83,3 +106,35 @@ def buscar_locales(db: Session, nombre: str = None, tipo_local_id: int = None, d
     if direccion_id:
         query = query.filter(Local.direccion_id == direccion_id)
     return query.all()
+
+def listar_locales_con_menus(db: Session, usuario: dict):
+    """Retorna lista de Local que tienen al menos un Menu asociado."""
+    query = db.query(Local).join(Menu).group_by(Local.id)
+
+    if usuario.get("tipo") != "admin":
+        query = query.filter(Local.habilitado == True)
+
+    return query.all()
+
+def habilitar_local(db: Session, id: int):
+    query = db.query(Local).filter(Local.id == id).first()
+    if not query:
+        return None
+
+    query.habilitado = True
+    db.commit()
+    db.refresh(query)
+    return(query)
+
+def deshabilitar_local(db: Session, id: int):
+    local = db.query(Local).filter(Local.id == id).first()
+    
+    if not local:
+        return None
+    
+    local.habilitado = False
+    db.commit()
+    db.refresh(local)
+    
+    return local
+

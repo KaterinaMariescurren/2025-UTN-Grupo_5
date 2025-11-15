@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 from app.bd.sesion import get_db
 from app.esquemas import categoria
 from app.crud import categoria as crud_categoria
+from app.utilidad.auth import verificar_token
 
-router = APIRouter(prefix="/categorias", tags=["categorias"])
+router = APIRouter(prefix="/categorias", tags=["categorias"], dependencies=[Depends(verificar_token)])
 
 @router.post("/", response_model=categoria.CategoriaOut)
 def crear_categoria(categoria_in: categoria.CategoriaCrear, db: Session = Depends(get_db)):
