@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://user:password@localhost:5432/be_your_eyes_db"  
+    "sqlite:///./dev.db"  
 )
 
 if DATABASE_URL.startswith("postgres://"):
