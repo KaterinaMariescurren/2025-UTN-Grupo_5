@@ -9,3 +9,7 @@ email-validator
 python-jose[cryptography]
 bcrypt
 qrcode[pil]==7.4.2
+pytest
+httpx==0.24.1
+pytest-asyncio
+psycopg2-binary
