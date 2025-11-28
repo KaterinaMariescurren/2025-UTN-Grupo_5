@@ -11,6 +11,7 @@ origins = [
     "http://localhost:3000",   # si tu frontend corre en React/Next.js
     "http://10.106.47.229:3000",  # ejemplo con tu IP local
     "http://10.106.47.229:8000",  # si también accedes directo a backend
+    "https://be-your-eyes-backend.onrender.com", # Render
     "*"  # permitir todos los orígenes (solo en desarrollo!)
 ]
 
@@ -41,3 +42,12 @@ app.include_router(qr.router)
 @app.get("/")
 def root():
     return {"message": "BeYourEyes API activa"}
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint para Render"""
+    return {
+        "status": "healthy",
+        "service": "BeYourEyes Backend",
+        "version": "1.0.0"
+    }
