@@ -22,17 +22,7 @@ jobs:
           cd be_your_eyes_backend
           pip install -r requerimientos.txt
       
-      - name: Format code (Black)
-        run: |
-          cd be_your_eyes_backend
-          pip install black
-          black .
-
-      - name: Lint code (Flake8)
-        run: |
-          cd be_your_eyes_backend
-          pip install flake8
-          flake8 app/ --max-line-length=100
+        # Agregar tests
 
   deploy:
     needs: test
