@@ -19,6 +19,12 @@ LEVANTAR EL FRONT:
         -npm install
         -npx expo start
 
+Hosting Render:
+
+```
+URL FastApi : https://be-your-eyes-backend.onrender.com/docs
+```
+
 INFORMACION:
 
 2. Formato de escritura de los commits:
