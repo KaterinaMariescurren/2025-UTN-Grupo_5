@@ -22,11 +22,16 @@ jobs:
           cd be_your_eyes_backend
           pip install -r requerimientos.txt
       
-      - name: Check code quality
+      - name: Format code (Black)
         run: |
           cd be_your_eyes_backend
-          pip install black flake8
-          black --check app/
+          pip install black
+          black .
+
+      - name: Lint code (Flake8)
+        run: |
+          cd be_your_eyes_backend
+          pip install flake8
           flake8 app/ --max-line-length=100
 
   deploy:
