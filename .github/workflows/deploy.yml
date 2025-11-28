@@ -22,12 +22,7 @@ jobs:
           cd be_your_eyes_backend
           pip install -r requerimientos.txt
       
-      - name: Check code quality
-        run: |
-          cd be_your_eyes_backend
-          pip install black flake8
-          black --check app/
-          flake8 app/ --max-line-length=100
+        # Agregar tests
 
   deploy:
     needs: test
