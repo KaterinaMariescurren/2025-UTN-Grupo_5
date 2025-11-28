@@ -14,3 +14,4 @@ httpx==0.24.1
 pytest-asyncio
 psycopg2-binary
 asyncpg
+alembic
