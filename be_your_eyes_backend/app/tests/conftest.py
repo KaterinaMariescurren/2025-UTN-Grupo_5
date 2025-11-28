@@ -7,7 +7,7 @@ from app.main import app
 from app.bd.sesion import Base, get_db
 
 # BD de test PostgreSQL (sync)
-TEST_DATABASE_URL = "postgresql://test:test@localhost:5434/beyoureyes_test"
+TEST_DATABASE_URL = "postgresql://test:test@localhost:5432/beyoureyes_test"
 
 # Engine de pruebas (SYNC)
 engine_test = create_engine(TEST_DATABASE_URL)

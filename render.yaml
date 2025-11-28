@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: be-your-eyes-backend
+    env: docker
+    region: oregon
+    plan: free
+    dockerfilePath: ./be_your_eyes_backend/Dockerfile
+    dockerContext: ./be_your_eyes_backend
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: be-your-eyes-db
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: 3.11.0
+    healthCheckPath: /health
+
+databases:
+  - name: be-your-eyes-db
+    databaseName: be_your_eyes
+    user: beyoureyes
+    plan: free
+    region: oregon

@@ -42,7 +42,7 @@ def test_login(client):
 
 
 def test_obtener_local_id(client):
-    l = client.post("tipos_local/", json={"nombre": "Restaurante"})
+    l = client.post("/tipos_local/", json={"nombre": "Restaurante"})
     id_tipo = l.json()["id"]
     r = client.post("/register", json={
     "email": "local@test.com",
