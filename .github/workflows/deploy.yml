@@ -38,6 +38,13 @@ jobs:
           cd be_your_eyes_backend
           pip install -r requerimientos.txt
       
+      - name: Run Alembic migrations (test)
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5434/beyoureyes_test
+        run: |
+          cd be_your_eyes_backend
+          alembic upgrade head
+      
       - name: Run tests
         env:
           DATABASE_URL: postgresql://test:test@localhost:5434/beyoureyes_test
