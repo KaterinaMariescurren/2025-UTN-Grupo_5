@@ -18,7 +18,7 @@ jobs:
           POSTGRES_PASSWORD: test
           POSTGRES_DB: beyoureyes_test
         ports:
-          - 5434:5432
+          - 5432:5432
         options: >-
           --health-cmd "pg_isready -U test"
           --health-interval 5s
@@ -40,14 +40,14 @@ jobs:
       
       - name: Run Alembic migrations (test)
         env:
-          DATABASE_URL: postgresql://test:test@localhost:5434/beyoureyes_test
+          DATABASE_URL: postgresql://test:test@localhost:5432/beyoureyes_test
         run: |
           cd be_your_eyes_backend
           alembic upgrade head
       
       - name: Run tests
         env:
-          DATABASE_URL: postgresql://test:test@localhost:5434/beyoureyes_test
+          DATABASE_URL: postgresql://test:test@localhost:5432/beyoureyes_test
         run: |
           cd be_your_eyes_backend
           pytest -vv
