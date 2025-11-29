@@ -15,3 +15,5 @@ pytest-asyncio
 psycopg2-binary
 asyncpg
 alembic
+pytest-cov
+
