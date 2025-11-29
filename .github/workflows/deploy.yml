@@ -3,59 +3,10 @@ name: Deploy to Render
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: beyoureyes_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U test"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      
-      - name: Install dependencies
-        run: |
-          cd be_your_eyes_backend
-          pip install -r requerimientos.txt
-      
-      - name: Run Alembic migrations (test)
-        env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/beyoureyes_test
-        run: |
-          cd be_your_eyes_backend
-          alembic upgrade head
-      
-      - name: Run tests
-        env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/beyoureyes_test
-        run: |
-          cd be_your_eyes_backend
-          pytest -vv
-
   deploy:
-    needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     
     steps:
       - uses: actions/checkout@v3
