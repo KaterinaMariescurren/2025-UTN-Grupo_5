@@ -48,4 +48,4 @@ jobs:
           DATABASE_URL: postgresql://test:test@localhost:5432/beyoureyes_test
         run: |
           cd be_your_eyes_backend
-          pytest -vv
+          pytest -vv --cov=app --cov-report=term-missing --cov-fail-under=60
